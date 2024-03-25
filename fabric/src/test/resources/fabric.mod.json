@@ -1,8 +1,8 @@
 {
     "schemaVersion": 1,
-    "id": "${mod_id}",
+    "id": "${mod_id}_test",
     "version": "${version}",
-    "name": "${mod_name}",
+    "name": "${mod_name} Test",
     "description": "${description}",
     "authors": [
         "${mod_author}"
@@ -17,13 +17,9 @@
     "environment": "*",
     "entrypoints": {
         "main": [
-          "dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigFabric"
+          "dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTestFabric"
         ]
     },
-    "mixins": [
-        "${mod_id}.mixins.json",
-        "${mod_id}.fabric.mixins.json"
-    ],
     "depends": {
         "fabricloader": ">=${fabric_loader_version}",
         "fabric-api": "*",

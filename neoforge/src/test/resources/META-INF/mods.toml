@@ -34,3 +34,25 @@ type="required"
 versionRange = "${minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"
+[[mods]]
+modId = "${mod_id}_test"
+version = "${version}"
+displayName = "${mod_name} Test"
+displayURL="https://github.com/GreenhouseTeam/greenhouse-config"
+logoFile="${mod_id}.png"
+logoBlur=false
+credits="${credits}"
+authors = "${mod_author}"
+description = '''${description}'''
+[[dependencies.${mod_id}_test]]
+modId = "neoforge"
+type="required"
+versionRange = "${neoforge_loader_version_range}"
+ordering = "NONE"
+side = "BOTH"
+[[dependencies.${mod_id}_test]]
+modId = "minecraft"
+type="required"
+versionRange = "${minecraft_version_range}"
+ordering = "NONE"
+side = "BOTH"
