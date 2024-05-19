@@ -15,8 +15,8 @@ import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCElement;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCNull;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCObject;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCPrimitive;
+import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nullable;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;

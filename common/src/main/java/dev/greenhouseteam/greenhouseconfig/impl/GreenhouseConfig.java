@@ -1,6 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
 import dev.greenhouseteam.greenhouseconfig.platform.GHConfigIPlatformHelper;
+import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -13,6 +14,14 @@ public class GreenhouseConfig {
 
     public static void init(GHConfigIPlatformHelper platform) {
         PLATFORM = platform;
+    }
+
+    public static void onServerStarting(MinecraftServer server) {
+        GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
+    }
+
+    public static void onServerStart(MinecraftServer server) {
+        GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
     }
 
     public static GHConfigIPlatformHelper getPlatform() {

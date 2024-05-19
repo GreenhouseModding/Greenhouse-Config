@@ -5,9 +5,11 @@ import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.platform.GHConfigIPlatformHelper;
+import net.minecraft.core.HolderLookup;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
+import java.util.function.BiConsumer;
 
 public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> {
 
@@ -18,12 +20,14 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     private final Codec<T> serverCodec;
     private final Codec<T> clientCodec;
     private final Codec<T> networkCodec;
+    private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer;
     private final Map<Integer, Codec<T>> backwardsCompatCodecs;
 
     public GreenhouseConfigHolderImpl(String modId, int configVersion,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
                                       @Nullable Codec<T> networkCodec,
+                                      @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer,
                                       Map<Integer, Codec<T>> backwardsCompatCodecs) {
         this.modId = modId;
         this.configVersion = configVersion;
@@ -32,6 +36,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         this.serverCodec = serverCodec;
         this.clientCodec = clientCodec;
         this.networkCodec = networkCodec;
+        this.postRegistryPopulationConsumer = postRegistryPopulationConsumer;
         this.backwardsCompatCodecs = backwardsCompatCodecs;
     }
 
@@ -51,16 +56,22 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
 
     public <E> E encode(DynamicOps<E> ops, T value) {
         Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? this.serverCodec : this.clientCodec;
-        return codec.encodeStart(ops, value).getOrThrow(true, s -> GreenhouseConfig.LOG.error("Failed to encode config for mod '" + this.modId + "'. " + s));
+        return codec.encodeStart(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.modId + "'. " + s));
     }
 
     public <E> T decode(DynamicOps<E> ops, E value) {
         Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? this.serverCodec : this.clientCodec;
-        return codec.decode(ops, value).getOrThrow(true, s -> GreenhouseConfig.LOG.error("Failed to decode config for mod '" + this.modId + "'. Please check your config file. " + s)).getFirst();
+        return codec.decode(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.modId + "'. Please check your config tile" + s)).getFirst();
     }
 
     public int getConfigVersion() {
         return this.configVersion;
+    }
+
+    public void postRegistryPopulation(HolderLookup.Provider registries, T value) {
+        if (postRegistryPopulationConsumer == null)
+            return;
+        postRegistryPopulationConsumer.accept(registries, value);
     }
 
     public Codec<T> getServerCodec() {

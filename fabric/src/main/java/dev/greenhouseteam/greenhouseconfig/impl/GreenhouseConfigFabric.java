@@ -12,8 +12,16 @@ public class GreenhouseConfigFabric implements ModInitializer {
         GreenhouseConfig.init(new GreenhouseConfigFabricPlatformHelper());
 
         ServerLifecycleEvents.SERVER_STARTING.register(server -> {
-            if (server.isDedicatedServer())
+            if (server.isDedicatedServer()) {
                 dedicatedServerContext = true;
+                GreenhouseConfig.onServerStarting(server);
+            }
+        });
+        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
+            if (server.isDedicatedServer()) {
+                dedicatedServerContext = true;
+                GreenhouseConfig.onServerStart(server);
+            }
         });
     }
 

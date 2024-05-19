@@ -1,6 +1,6 @@
 modLoader = "javafml"
 loaderVersion = "${neoforge_loader_version_range}"
-license = "${license}"
+license = "${mod_license}"
 issueTrackerURL="https://github.com/GreenhouseTeam/greenhouse-config/issues"
 
 [[mods]]
@@ -10,9 +10,9 @@ displayName = "${mod_name}"
 displayURL="https://github.com/GreenhouseTeam/greenhouse-config"
 logoFile="${mod_id}.png"
 logoBlur=false
-credits="${credits}"
+credits="${mod_contributors}"
 authors = "${mod_author}"
-description = '''${description}'''
+description = '''${mod_description}'''
 
 [[mixins]]
 config = "${mod_id}.mixins.json"
@@ -20,7 +20,7 @@ config = "${mod_id}.mixins.json"
 config = "${mod_id}.neoforge.mixins.json"
 
 [[accessTransformers]]
-file="greenhouseconfig.at"
+file="greenhouseconfig.cfg"
 
 [[dependencies.${mod_id}]]
 modId = "neoforge"
@@ -31,6 +31,6 @@ side = "BOTH"
 [[dependencies.${mod_id}]]
 modId = "minecraft"
 type="required"
-versionRange = "${minecraft_version_range}"
+versionRange = "${neoforge_minecraft_version_range}"
 ordering = "NONE"
 side = "BOTH"

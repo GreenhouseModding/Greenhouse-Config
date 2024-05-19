@@ -3,16 +3,19 @@
     "id": "${mod_id}_test",
     "version": "${version}",
     "name": "${mod_name} Test",
-    "description": "${description}",
+    "description": "${mod_description}",
     "authors": [
         "${mod_author}"
     ],
+    "contributors": [
+        ${fabric_mod_contributors}
+    ],
     "contact": {
-        "homepage": "https://github.com/GreenhouseTeam/greenhouse-config",
-        "sources": "https://github.com/GreenhouseTeam/greenhouse-config",
-        "issues": "https://github.com/GreenhouseTeam/greenhouse-config/issues"
+        "homepage": "${homepage}",
+        "issues": "${issues}",
+        "sources": "${sources}"
     },
-    "license": "${license}",
+    "license": "${mod_license}",
     "icon": "${mod_id}.png",
     "environment": "*",
     "entrypoints": {
@@ -21,10 +24,10 @@
         ]
     },
     "depends": {
-        "fabricloader": ">=${fabric_loader_version}",
+        "fabricloader": "${fabric_loader_range}",
         "fabric-api": "*",
-        "minecraft": "${minecraft_version}",
-        "java": ">=17"
+        "minecraft": "${fabric_minecraft_version_range}",
+        "java": ">=${java_version}"
     }
 }
   

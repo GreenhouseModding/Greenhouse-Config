@@ -7,8 +7,6 @@ public class GreenhouseConfigTestFabric implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        ClientLifecycleEvents.CLIENT_STARTED.register(client -> {
-            GreenhouseConfigTest.init();
-        });
+        GreenhouseConfigTest.init();
     }
 }

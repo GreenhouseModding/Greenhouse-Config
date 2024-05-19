@@ -7,11 +7,16 @@ import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
+import net.minecraft.core.HolderLookup;
+
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
 public interface GreenhouseConfigHolder<T> {
 
     default T get() {
-        return GreenhouseConfigStorage.getValues(this, GreenhouseConfig.getPlatform().getSide());
+        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<T>) this);
     }
 
     T getDefaultServerValue();
@@ -25,6 +30,7 @@ public interface GreenhouseConfigHolder<T> {
         private Codec<T> serverCodec;
         private Codec<T> clientCodec;
         private Codec<T> networkCodec;
+        private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer;
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecs = ImmutableMap.builder();
 
         public Builder(String modId) {
@@ -70,6 +76,11 @@ public interface GreenhouseConfigHolder<T> {
             return this;
         }
 
+        public Builder<T> postRegistryPopulation(BiConsumer<HolderLookup.Provider, T> consumer) {
+            this.postRegistryPopulationConsumer = consumer;
+            return this;
+        }
+
         public GreenhouseConfigHolder<T> buildAndRegister() {
             if (modId == null)
                 throw new UnsupportedOperationException("Attempted to build config without a modid.");
@@ -80,7 +91,7 @@ public interface GreenhouseConfigHolder<T> {
             if (defaultServerValue == null && defaultClientValue == null)
                 throw new UnsupportedOperationException("Attempted to build config without a default value.");
 
-            GreenhouseConfigHolderImpl<T> config = new GreenhouseConfigHolderImpl<>(this.modId, this.configVersion, this.defaultServerValue, this.defaultClientValue, this.serverCodec, this.clientCodec, this.networkCodec, this.backwardsCompatCodecs.build());
+            GreenhouseConfigHolderImpl<T> config = new GreenhouseConfigHolderImpl<>(this.modId, this.configVersion, this.defaultServerValue, this.defaultClientValue, this.serverCodec, this.clientCodec, this.networkCodec, this.postRegistryPopulationConsumer, this.backwardsCompatCodecs.build());
 
             if (serverCodec != null)
                 GreenhouseConfigHolderRegistry.registerServerConfig(this.modId, config);

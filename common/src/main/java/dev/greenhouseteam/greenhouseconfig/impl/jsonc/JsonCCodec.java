@@ -18,10 +18,6 @@ public class JsonCCodec<T> implements Codec<T> {
         this.baseCodec = codec;
     }
 
-    public static <T> Codec<T> codec(List<String> comment, Codec<T> codec) {
-        return new JsonCCodec<>(comment, codec);
-    }
-
     @Override
     public <T1> DataResult<Pair<T, T1>> decode(DynamicOps<T1> ops, T1 input) {
         return baseCodec.decode(ops, input);
@@ -31,7 +27,7 @@ public class JsonCCodec<T> implements Codec<T> {
     public <T1> DataResult<T1> encode(T input, DynamicOps<T1> ops, T1 prefix) {
         DataResult<T1> result = baseCodec.encode(input, ops, prefix);
         if (ops instanceof JsonCOps && result.error().isEmpty()) {
-            JsonCElement element = (JsonCElement)result.getOrThrow(false, GreenhouseConfig.LOG::error);
+            JsonCElement element = (JsonCElement)result.getOrThrow();
             element.setComments(comments);
             return DataResult.success((T1)element);
         }
