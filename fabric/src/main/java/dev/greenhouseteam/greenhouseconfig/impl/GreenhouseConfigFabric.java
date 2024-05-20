@@ -19,7 +19,7 @@ public class GreenhouseConfigFabric implements ModInitializer {
         });
         ServerLifecycleEvents.SERVER_STARTED.register(server -> {
             if (server.isDedicatedServer()) {
-                GreenhouseConfig.onServerStart(server);
+                GreenhouseConfig.onServerStarted(server);
             }
         });
     }

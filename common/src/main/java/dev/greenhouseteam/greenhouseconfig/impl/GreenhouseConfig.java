@@ -25,7 +25,7 @@ public class GreenhouseConfig {
         GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
     }
 
-    public static void onServerStart(MinecraftServer server) {
+    public static void onServerStarted(MinecraftServer server) {
         GreenhouseConfigStorage.onRegistryPopulation(server.registryAccess());
     }
 

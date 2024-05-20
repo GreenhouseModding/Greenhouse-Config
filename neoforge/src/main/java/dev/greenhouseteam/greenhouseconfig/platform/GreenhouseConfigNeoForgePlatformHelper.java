@@ -1,6 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
-import dev.greenhouseteam.greenhouseconfig.GreenhouseConfigNeoForge;
+import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigNeoForge;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;

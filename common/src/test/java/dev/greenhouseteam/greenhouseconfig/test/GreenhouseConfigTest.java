@@ -12,7 +12,7 @@ public class GreenhouseConfigTest {
     public static final String MOD_ID = "greenhouseconfig_test";
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
-    private static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
+    public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
             .configVersion(1)
             .commonCodec(TestConfig.TEST_CONFIG_CODEC, TestConfig.DEFAULT)
             .postRegistryPopulation((provider, testConfig) -> {
@@ -21,7 +21,6 @@ public class GreenhouseConfigTest {
             .buildAndRegister();
 
     public static void init() {
-
     }
 
     public static ResourceLocation asResource(String path) {
