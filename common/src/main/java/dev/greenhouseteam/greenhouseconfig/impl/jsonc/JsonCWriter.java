@@ -1,5 +1,8 @@
 package dev.greenhouseteam.greenhouseconfig.impl.jsonc;
 
+import com.google.gson.JsonElement;
+import com.google.gson.JsonPrimitive;
+import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
@@ -8,6 +11,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 public class JsonCWriter implements Closeable, Flushable {
     private final Writer writer;
@@ -15,7 +19,7 @@ public class JsonCWriter implements Closeable, Flushable {
     private int currentId = 0;
     private final int[] objectCount = new int[32];
     @Nullable
-    private List<String> comments;
+    private String[] comments;
     @Nullable
     private String key;
 
@@ -26,6 +30,49 @@ public class JsonCWriter implements Closeable, Flushable {
 
     public String toString() {
         return writer.toString();
+    }
+
+    public void writeJson(CommentedJson json) throws IOException {
+        if (json instanceof CommentedJson.Object object) {
+            comments(json.comments());
+            beginObject();
+            for (Map.Entry<String, CommentedJson> e : object.getMap().entrySet()) {
+                comments(e.getValue().comments());
+                key(e.getKey());
+                writeJson(e.getValue());
+            }
+            endObject();
+            return;
+        }
+        if (json.json().isJsonNull()) {
+            writeValue("null");
+        } else if (json.json().isJsonPrimitive()) {
+            JsonPrimitive primitive = json.json().getAsJsonPrimitive();
+            if (primitive.isNumber()) {
+                writeValue(primitive.getAsNumber());
+            } else if (primitive.isBoolean()) {
+                writeValue(primitive.getAsBoolean());
+            } else {
+                writeValue(primitive.getAsString());
+            }
+        } else if (json.json().isJsonArray()) {
+            comments(json.comments());
+            beginArray();
+            for (JsonElement e : json.json().getAsJsonArray()) {
+                writeJson(new CommentedJson(e));
+            }
+            endArray();
+        } else if (json.json().isJsonObject()) {
+            comments(json.comments());
+            beginObject();
+            for (Map.Entry<String, JsonElement> e : json.json().getAsJsonObject().entrySet()) {
+                key(e.getKey());
+                writeJson(new CommentedJson(e.getValue()));
+            }
+            endObject();
+        } else {
+            throw new IllegalArgumentException("Couldn't write " + this.getClass());
+        }
     }
 
     public void beginArray() throws IOException {
@@ -86,7 +133,7 @@ public class JsonCWriter implements Closeable, Flushable {
         this.writer.append("}");
     }
 
-    public void comments(List<String> comments) {
+    public void comments(String[] comments) {
         this.comments = comments;
     }
 

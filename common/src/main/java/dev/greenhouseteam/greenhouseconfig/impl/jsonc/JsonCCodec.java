@@ -4,8 +4,9 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCElement;
+import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+import dev.greenhouseteam.greenhouseconfig.mixin.DelegatingOpsAccessor;
+import net.minecraft.resources.DelegatingOps;
 
 import java.util.List;
 
@@ -26,9 +27,9 @@ public class JsonCCodec<T> implements Codec<T> {
     @Override
     public <T1> DataResult<T1> encode(T input, DynamicOps<T1> ops, T1 prefix) {
         DataResult<T1> result = baseCodec.encode(input, ops, prefix);
-        if (ops instanceof JsonCOps && result.error().isEmpty()) {
-            JsonCElement element = (JsonCElement)result.getOrThrow();
-            element.setComments(comments);
+        if ((ops instanceof JsonCOps || ops instanceof DelegatingOps<T1> delegatingOps && ((DelegatingOpsAccessor)delegatingOps).greenhouseconfig$getDelegate() instanceof JsonCOps) && result.error().isEmpty()) {
+            CommentedJson element = (CommentedJson) result.getOrThrow();
+            element = new CommentedJson(element.json(), comments.toArray(String[]::new));
             return DataResult.success((T1)element);
         }
         return result;

@@ -6,8 +6,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public class GreenhouseConfig {
-
-
     public static final String MOD_ID = "greenhouseconfig";
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config");
     private static GHConfigIPlatformHelper PLATFORM;
@@ -21,7 +19,7 @@ public class GreenhouseConfig {
     }
 
     public static void onServerStart(MinecraftServer server) {
-        GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
+        GreenhouseConfigStorage.onRegistryPopulation(server.registryAccess());
     }
 
     public static GHConfigIPlatformHelper getPlatform() {

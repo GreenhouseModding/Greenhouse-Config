@@ -34,7 +34,7 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
             ops.getStream(value).getOrThrow().forEach(t -> {
                 String string = ops.getStringValue(t).getOrThrow();
                 if (string.startsWith("#"))
-                    keys.add(Either.left(TagKey.create(registryKey, new ResourceLocation(string))));
+                    keys.add(Either.left(TagKey.create(registryKey, new ResourceLocation(string.substring(1)))));
                 else
                     keys.add(Either.right(ResourceKey.create(registryKey, new ResourceLocation(string))));
             });

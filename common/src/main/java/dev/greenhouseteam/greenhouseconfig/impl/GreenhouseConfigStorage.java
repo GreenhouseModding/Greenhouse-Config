@@ -1,17 +1,20 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
+import com.google.gson.JsonParser;
 import com.google.gson.JsonPrimitive;
+import com.mojang.serialization.JsonOps;
+import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCOps;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCElement;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCObject;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.element.JsonCPrimitive;
+import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCWriter;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.RegistryAccess;
 import net.minecraft.resources.RegistryOps;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.HashMap;
@@ -32,34 +35,58 @@ public class GreenhouseConfigStorage {
 
     public static void generateServerConfigs(RegistryAccess registries) {
         for (Object config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values())
-            createServerConfigIfMissing((GreenhouseConfigHolderImpl<?>) config, registries);
+            loadServerConfig((GreenhouseConfigHolderImpl<?>) config, registries);
     }
 
     public static void generateClientConfigs() {
         for (Object config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values())
-            createClientConfigIfMissing((GreenhouseConfigHolderImpl<?>) config);
+            loadClientConfig((GreenhouseConfigHolderImpl<?>) config);
     }
 
     public static void onRegistryPopulation(HolderLookup.Provider registries) {
-        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : CLIENT_CONFIGS.entrySet())
+        boolean isServer = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER;
+        Map<GreenhouseConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
+        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet())
             ((GreenhouseConfigHolderImpl<Object>)entry.getKey()).postRegistryPopulation(registries, entry.getValue());
     }
 
-    public static <T> void createServerConfigIfMissing(GreenhouseConfigHolderImpl<T> holder, RegistryAccess registries) {
-        if (!SERVER_CONFIGS.containsKey(holder)) {
-            SERVER_CONFIGS.put(holder, holder.getDefaultServerValue());
-            createConfigIfMissing(holder, holder.encode(RegistryOps.create(JsonCOps.INSTANCE, registries), holder.getDefaultServerValue()));
+    public static <T> void loadServerConfig(GreenhouseConfigHolderImpl<T> holder, RegistryAccess registries) {
+        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getModId() + ".jsonc").toFile();
+
+        if (file.exists()) {
+            try {
+                T value = holder.decode(JsonOps.INSTANCE, JsonParser.parseReader(new FileReader(file)));
+                SERVER_CONFIGS.put(holder, value);
+                return;
+            } catch (FileNotFoundException ex) {
+                GreenhouseConfig.LOG.error("Could not read Greenhouse config file '{}'.", file.getPath());
+            }
         }
+
+        SERVER_CONFIGS.put(holder, holder.getDefaultServerValue());
+        CommentedJson commented = holder.encode(RegistryOps.create(JsonCOps.INSTANCE, registries), holder.getDefaultServerValue());
+        createConfigIfMissing(holder, commented);
     }
 
-    public static <T> void createClientConfigIfMissing(GreenhouseConfigHolderImpl<T> holder) {
-        if (!CLIENT_CONFIGS.containsKey(holder)) {
-            CLIENT_CONFIGS.put(holder, holder.getDefaultClientValue());
-            createConfigIfMissing(holder, holder.encode(JsonCOps.INSTANCE, holder.getDefaultClientValue()));
+    public static <T> void loadClientConfig(GreenhouseConfigHolderImpl<T> holder) {
+        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getModId() + ".jsonc").toFile();
+
+        if (file.exists()) {
+            try {
+                T value = holder.decode(JsonOps.INSTANCE, JsonParser.parseReader(new FileReader(file)));
+                CLIENT_CONFIGS.put(holder, value);
+                return;
+            } catch (FileNotFoundException ex) {
+                GreenhouseConfig.LOG.error("Could not read Greenhouse config file '{}'.", file.getPath());
+            }
         }
+
+        CLIENT_CONFIGS.put(holder, holder.getDefaultClientValue());
+        CommentedJson commented = holder.encode(JsonCOps.INSTANCE, holder.getDefaultClientValue());
+        createConfigIfMissing(holder, commented);
     }
 
-    public static <T> void createConfigIfMissing(GreenhouseConfigHolderImpl<T> holder, JsonCElement element) {
+    public static <T> void createConfigIfMissing(GreenhouseConfigHolderImpl<T> holder, CommentedJson element) {
         try {
             File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getModId() + ".jsonc").toFile();
             if (!file.exists()) {
@@ -68,22 +95,24 @@ public class GreenhouseConfigStorage {
                     return;
                 }
             }
-            JsonCPrimitive schema = new JsonCPrimitive(new JsonPrimitive(holder.getConfigVersion()));
-            schema.addComment("This is the schema version of the config.");
-            schema.addComment("DO NOT MODIFY THIS FIELD!!!");
-            schema.addComment("Otherwise your config will not update if the schema changes.");
-
-            if (element instanceof JsonCObject jsonCObject) {
-                jsonCObject.addElementToBeginning("schema_version", schema);
+            CommentedJson schema = new CommentedJson(new JsonPrimitive(holder.getConfigVersion()),
+                    "This is the schema version of the config.",
+                    "DO NOT MODIFY THIS FIELD!!!",
+                    "Otherwise your config will not update if the schema changes.");
+            CommentedJson.Object object = new CommentedJson.Object();
+            if (element instanceof CommentedJson.Object obj) {
+                object.put("schema_version", schema);
+                object.putAll(obj.getMap());
             } else {
-                JsonCObject object = new JsonCObject();
-                object.addElement("schema_version", schema);
-                object.addElement("value", element);
-                element = object;
+                object.put("schema_version", schema);
+                object.put("value", element);
             }
+            element = object;
 
             FileWriter writer = new FileWriter(file);
-            element.write(writer);
+            JsonCWriter jsonWriter = new JsonCWriter(writer);
+            jsonWriter.writeJson(element);
+            writer.close();
         } catch (IOException e) {
             GreenhouseConfig.LOG.error("Failed to create config for mod '" + holder.getModId() + "' to config directory. Skipping and using default config values.");
         }
