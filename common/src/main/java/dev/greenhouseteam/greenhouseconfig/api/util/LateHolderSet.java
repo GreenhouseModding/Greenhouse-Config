@@ -121,7 +121,7 @@ public interface LateHolderSet<T> extends HolderSet<T> {
         @Override
         public void bind(HolderLookup.RegistryLookup<T> registry) {
             if (registry.get(key()).isEmpty())
-                GreenhouseConfig.LOG.error("Could not read resource " + key().location() + " for registry " + key().registry() + ". Please check if it is valid");
+                GreenhouseConfig.LOG.error("Could not read resource " + key().location() + " for registry " + key().registry().location() + ". Please check if it is valid");
             ((HolderSetNamedAccessor)this).greenhouseconfig$invokeBind(registry.get(key()).get().stream().toList());
         }
     }
@@ -199,7 +199,7 @@ public interface LateHolderSet<T> extends HolderSet<T> {
                 key
                         .ifLeft(tagKey -> {
                             if (registry.get(tagKey).isEmpty()) {
-                                GreenhouseConfig.LOG.error("Could not read tag " + tagKey.location() + " for registry " + tagKey.registry() + ". Please check if it is valid.");
+                                GreenhouseConfig.LOG.error("Could not read tag " + tagKey.location() + " for registry " + tagKey.registry().location() + ". Please check if it is valid.");
                                 return;
                             }
                             builder.addAll(registry.get(tagKey).get().stream().toList());
