@@ -23,7 +23,7 @@
           "dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigFabric"
         ],
         "client": [
-            "dev.greenhouseteam.greenhouseconfig.client.GreenhouseConfigFabricClient"
+          "dev.greenhouseteam.greenhouseconfig.impl.client.GreenhouseConfigFabricClient"
         ]
     },
     "accessWidener": "greenhouseconfig.accesswidener",

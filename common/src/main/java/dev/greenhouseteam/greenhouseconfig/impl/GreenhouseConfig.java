@@ -1,6 +1,9 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
 import dev.greenhouseteam.greenhouseconfig.platform.GHConfigIPlatformHelper;
+import net.minecraft.advancements.critereon.PickedUpItemTrigger;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.MinecraftServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,11 +17,19 @@ public class GreenhouseConfig {
         PLATFORM = platform;
     }
 
+    public static ResourceLocation asResource(String path) {
+        return new ResourceLocation(MOD_ID, path);
+    }
+
     public static void onServerStarting(MinecraftServer server) {
         GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
     }
 
     public static void onServerStart(MinecraftServer server) {
+        GreenhouseConfigStorage.onRegistryPopulation(server.registryAccess());
+    }
+
+    public static void onReload(MinecraftServer server) {
         GreenhouseConfigStorage.onRegistryPopulation(server.registryAccess());
     }
 

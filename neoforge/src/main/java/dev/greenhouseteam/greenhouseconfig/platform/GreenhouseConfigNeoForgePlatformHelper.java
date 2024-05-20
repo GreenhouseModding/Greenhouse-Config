@@ -2,6 +2,8 @@ package dev.greenhouseteam.greenhouseconfig.platform;
 
 import dev.greenhouseteam.greenhouseconfig.GreenhouseConfigNeoForge;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
@@ -34,5 +36,15 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
     @Override
     public Path getConfigPath() {
         return FMLPaths.CONFIGDIR.get();
+    }
+
+    @Override
+    public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+        GreenhouseConfigEvents.PostLoad.post(holder, config, side);
+    }
+
+    @Override
+    public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+        GreenhouseConfigEvents.PostPopulation.post(holder, config, side);
     }
 }

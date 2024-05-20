@@ -34,20 +34,28 @@ public class GreenhouseConfigStorage {
     }
 
     public static void generateServerConfigs(RegistryAccess registries) {
-        for (Object config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values())
-            loadServerConfig((GreenhouseConfigHolderImpl<?>) config, registries);
+        for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values()) {
+            GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
+            loadServerConfig(holder, registries);
+            GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), ConfigSide.SERVER);
+        }
     }
 
     public static void generateClientConfigs() {
-        for (Object config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values())
-            loadClientConfig((GreenhouseConfigHolderImpl<?>) config);
+        for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values()) {
+            GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
+            loadClientConfig(holder);
+            GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), ConfigSide.CLIENT);
+        }
     }
 
     public static void onRegistryPopulation(HolderLookup.Provider registries) {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER;
         Map<GreenhouseConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
-        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet())
+        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet()) {
             ((GreenhouseConfigHolderImpl<Object>)entry.getKey()).postRegistryPopulation(registries, entry.getValue());
+            GreenhouseConfig.getPlatform().postPopulationEvent((GreenhouseConfigHolder<Object>) entry.getKey(), entry.getValue(), GreenhouseConfig.getPlatform().getSide());
+        }
     }
 
     public static <T> void loadServerConfig(GreenhouseConfigHolderImpl<T> holder, RegistryAccess registries) {

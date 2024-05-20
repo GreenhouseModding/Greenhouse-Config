@@ -5,9 +5,12 @@ import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
 import dev.greenhouseteam.greenhouseconfig.test.config.TestConfig;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class GreenhouseConfigTest {
-    private static final String MOD_ID = "greenhouseconfig_test";
+    public static final String MOD_ID = "greenhouseconfig_test";
+    public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
     private static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
             .configVersion(1)

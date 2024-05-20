@@ -1,6 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 
 import java.nio.file.Path;
 
@@ -47,4 +48,8 @@ public interface GHConfigIPlatformHelper {
 
         return isDevelopmentEnvironment() ? "development" : "production";
     }
+
+    <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+
+    <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
 }

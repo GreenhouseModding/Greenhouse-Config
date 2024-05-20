@@ -1,6 +1,5 @@
-package dev.greenhouseteam.greenhouseconfig.client;
+package dev.greenhouseteam.greenhouseconfig.impl.client;
 
-import dev.greenhouseteam.greenhouseconfig.impl.client.GreenhouseConfigClient;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 

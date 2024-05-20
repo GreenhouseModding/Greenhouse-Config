@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.ListBuilder;
+import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.mixin.HolderSetNamedAccessor;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
@@ -89,8 +90,11 @@ public interface LateHolderSet<T> extends HolderSet<T> {
         public void bind(HolderLookup.RegistryLookup<T> registry) {
             ImmutableList.Builder<Holder<T>> builder = ImmutableList.builder();
             for (ResourceKey<T> key : keys) {
-                if (registry.get(key).isPresent())
-                    builder.add(registry.get(key).get());
+                if (!registry.get(key).isEmpty()) {
+                    GreenhouseConfig.LOG.error("Could not read resource " + key.location() + " for registry " + key.registry() + ". Please check if it is valid.");
+                    return;
+                }
+                builder.add(registry.get(key).get());
             }
             contents = builder.build();
         }
@@ -117,7 +121,7 @@ public interface LateHolderSet<T> extends HolderSet<T> {
         @Override
         public void bind(HolderLookup.RegistryLookup<T> registry) {
             if (registry.get(key()).isEmpty())
-                return;
+                GreenhouseConfig.LOG.error("Could not read resource " + key().location() + " for registry " + key().registry() + ". Please check if it is valid");
             ((HolderSetNamedAccessor)this).greenhouseconfig$invokeBind(registry.get(key()).get().stream().toList());
         }
     }
@@ -194,13 +198,17 @@ public interface LateHolderSet<T> extends HolderSet<T> {
             keys.forEach(key -> {
                 key
                         .ifLeft(tagKey -> {
-                            if (registry.get(tagKey).isEmpty())
+                            if (registry.get(tagKey).isEmpty()) {
+                                GreenhouseConfig.LOG.error("Could not read tag " + tagKey.location() + " for registry " + tagKey.registry() + ". Please check if it is valid.");
                                 return;
+                            }
                             builder.addAll(registry.get(tagKey).get().stream().toList());
                         })
                         .ifRight(resourceKey -> {
-                            if (registry.get(resourceKey).isEmpty())
+                            if (registry.get(resourceKey).isEmpty()) {
+                                GreenhouseConfig.LOG.error("Could not read resource " + resourceKey.location() + " for registry " + resourceKey.registry() + ". Please check if it is valid");
                                 return;
+                                }
                             builder.add(registry.get(resourceKey).get());
                         });
             });

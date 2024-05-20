@@ -15,6 +15,8 @@ import java.util.function.Function;
 
 public interface GreenhouseConfigHolder<T> {
 
+    String getModId();
+
     default T get() {
         return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<T>) this);
     }
