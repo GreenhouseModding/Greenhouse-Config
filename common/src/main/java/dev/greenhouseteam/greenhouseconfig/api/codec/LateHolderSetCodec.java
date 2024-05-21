@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
-import dev.greenhouseteam.greenhouseconfig.mixin.HolderSetCodecAccessor;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.HolderSetCodec;
@@ -49,6 +48,7 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
             return DataResult.success(mixed.encode(ops, prefix));
         if (holderSet instanceof HolderSet.Named<E> named)
             return DataResult.success(ops.createString("#" + named.key().location()));
-        return ((HolderSetCodecAccessor<E>)this).greenhouseconfig$getHomogenousListCodec().encode(holderSet.stream().toList(), ops, prefix);
+        return ResourceLocation.CODEC.listOf().encode(holderSet.stream().filter(e -> e.unwrapKey().isPresent())
+                        .map(e -> e.unwrapKey().get().location()).toList(), ops, prefix);
     }
 }
