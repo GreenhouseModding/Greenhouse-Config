@@ -1,7 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
 import com.google.gson.JsonParser;
-import com.google.gson.JsonPrimitive;
 import com.mojang.serialization.JsonOps;
 import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
@@ -17,9 +16,15 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
+import java.nio.file.attribute.UserDefinedFileAttributeView;
 import java.util.HashMap;
 import java.util.Map;
 
+// TODO: Handle backwards compat with config files.
 public class GreenhouseConfigStorage {
 
     private static final Map<GreenhouseConfigHolder<?>, Object> SERVER_CONFIGS = new HashMap<>();
@@ -94,7 +99,7 @@ public class GreenhouseConfigStorage {
         createConfigIfMissing(holder, commented);
     }
 
-    public static <T> void createConfigIfMissing(GreenhouseConfigHolderImpl<T> holder, CommentedJson element) {
+    public static <T> void createConfigIfMissing(GreenhouseConfigHolder<T> holder, CommentedJson element) {
         try {
             File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getModId() + ".jsonc").toFile();
             if (!file.exists()) {
@@ -103,26 +108,42 @@ public class GreenhouseConfigStorage {
                     return;
                 }
             }
-            CommentedJson schema = new CommentedJson(new JsonPrimitive(holder.getConfigVersion()),
-                    "This is the schema version of the config.",
-                    "DO NOT MODIFY THIS FIELD!!!",
-                    "Otherwise your config will not update if the schema changes.");
-            CommentedJson.Object object = new CommentedJson.Object();
-            if (element instanceof CommentedJson.Object obj) {
-                object.put("schema_version", schema);
-                object.putAll(obj.getMap());
-            } else {
-                object.put("schema_version", schema);
+            if (!(element instanceof CommentedJson.Object obj)) {
+                CommentedJson.Object object = new CommentedJson.Object();
                 object.put("value", element);
+                element = object;
             }
-            element = object;
 
             FileWriter writer = new FileWriter(file);
             JsonCWriter jsonWriter = new JsonCWriter(writer);
             jsonWriter.writeJson(element);
             writer.close();
+            writeSchemaVersion(file, holder);
         } catch (IOException e) {
             GreenhouseConfig.LOG.error("Failed to create config for mod '" + holder.getModId() + "' to config directory. Skipping and using default config values.");
+        }
+    }
+
+    private static void writeSchemaVersion(File file, GreenhouseConfigHolder<?> holder) throws IOException {
+        Files.setAttribute(file.toPath(), "user:GreenhouseConfigSchemaVersion", ByteBuffer.wrap(String.valueOf(holder.getConfigVersion()).getBytes(StandardCharsets.UTF_8)));
+    }
+
+    private static int readSchemaVersion(File file) throws IOException {
+        UserDefinedFileAttributeView view = Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class);
+        ByteBuffer buffer = ByteBuffer.allocate(view.size("GreenhouseConfigSchemaVersion"));
+        view.read("GreenhouseConfigSchemaVersion", buffer);
+        buffer.flip();
+        return Integer.valueOf(StandardCharsets.UTF_8.decode(buffer).toString());
+    }
+
+    private static void logSchema(File file, GreenhouseConfigHolder<?> holder) {
+        try {
+            if (Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class).list().contains("GreenhouseConfigSchemaVersion"))
+                GreenhouseConfig.LOG.debug("Config '" + holder.getModId() + "'s schema version is " + readSchemaVersion(file) + ".");
+        } catch (NoSuchFileException ex) {
+            GreenhouseConfig.LOG.debug("Config '" + holder.getModId() + "' does not exist, creating it now.");
+        } catch (Exception ex) {
+            GreenhouseConfig.LOG.debug("{}", ex);
         }
     }
 }

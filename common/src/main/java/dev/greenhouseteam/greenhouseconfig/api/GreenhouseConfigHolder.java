@@ -15,6 +15,8 @@ import java.util.function.Function;
 
 public interface GreenhouseConfigHolder<T> {
 
+    int getConfigVersion();
+
     String getModId();
 
     default T get() {
