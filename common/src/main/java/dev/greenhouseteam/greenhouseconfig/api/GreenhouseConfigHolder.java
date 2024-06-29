@@ -8,6 +8,8 @@ import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -33,7 +35,7 @@ public interface GreenhouseConfigHolder<T> {
         private T defaultClientValue;
         private Codec<T> serverCodec;
         private Codec<T> clientCodec;
-        private Codec<T> networkCodec;
+        private StreamCodec<RegistryFriendlyByteBuf, T> networkCodec;
         private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer;
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecs = ImmutableMap.builder();
 
@@ -49,7 +51,6 @@ public interface GreenhouseConfigHolder<T> {
         public Builder<T> commonCodec(Codec<T> codec, T defaultValue) {
             this.serverCodec =  codec;
             this.clientCodec = codec;
-            this.networkCodec = codec;
             this.defaultServerValue = defaultValue;
             this.defaultClientValue = defaultValue;
             return this;
@@ -67,8 +68,8 @@ public interface GreenhouseConfigHolder<T> {
             return this;
         }
 
-        public Builder<T> networkCodec(Codec<T> codec) {
-            this.networkCodec =  codec;
+        public Builder<T> networkCodec(StreamCodec<RegistryFriendlyByteBuf, T> networkCodec) {
+            this.networkCodec = networkCodec;
             return this;
         }
 

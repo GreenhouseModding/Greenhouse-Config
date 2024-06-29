@@ -1,7 +1,6 @@
-package dev.greenhouseteam.greenhouseconfig.api.codec;
+package dev.greenhouseteam.greenhouseconfig.impl.codec;
 
 import com.google.common.collect.ImmutableList;
-import com.mojang.datafixers.util.Either;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
@@ -22,30 +21,27 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
         registryKey = registry;
     }
 
-    public static <E> LateHolderSetCodec<E> create(ResourceKey<? extends Registry<E>> registry) {
-        return new LateHolderSetCodec<>(registry);
-    }
-
     @Override
     public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> ops, T value) {
         if (ops.getStream(value).isSuccess() && ops.getStream(value).getOrThrow().anyMatch(t -> ops.getStringValue(t).isSuccess() && ops.getStringValue(t).getOrThrow().startsWith("#"))) {
-            ImmutableList.Builder<Either<TagKey<E>, ResourceKey<E>>> keys = ImmutableList.builder();
+            ImmutableList.Builder<TagKey<E>> tags = ImmutableList.builder();
+            ImmutableList.Builder<ResourceKey<E>> entries = ImmutableList.builder();
             ops.getStream(value).getOrThrow().forEach(t -> {
                 String string = ops.getStringValue(t).getOrThrow();
                 if (string.startsWith("#"))
-                    keys.add(Either.left(TagKey.create(registryKey, new ResourceLocation(string.substring(1)))));
+                    tags.add(TagKey.create(registryKey, ResourceLocation.parse(string.substring(1))));
                 else
-                    keys.add(Either.right(ResourceKey.create(registryKey, new ResourceLocation(string))));
+                    entries.add(ResourceKey.create(registryKey, ResourceLocation.parse(string)));
             });
-            return DataResult.success(Pair.of(new LateHolderSet.Mixed(registryKey, keys.build()), value));
+            return DataResult.success(Pair.of(LateHolderSet.createMixed((ResourceKey<Registry<E>>) registryKey, tags.build(), entries.build()), value));
         }
         return super.decode(ops, value);
     }
 
     @Override
     public <T> DataResult<T> encode(HolderSet<E> holderSet, DynamicOps<T> ops, T prefix) {
-        if (holderSet instanceof LateHolderSet.Mixed<E> mixed)
-            return DataResult.success(mixed.encode(ops, prefix));
+        if (holderSet instanceof LateHolderSet<E> late)
+            return DataResult.success(late.encode(ops, prefix));
         if (holderSet instanceof HolderSet.Named<E> named)
             return DataResult.success(ops.createString("#" + named.key().location()));
         return ResourceLocation.CODEC.listOf().encode(holderSet.stream().filter(e -> e.unwrapKey().isPresent())

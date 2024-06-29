@@ -1,37 +1,49 @@
-
 import dev.greenhouseteam.greenhouseconfig.gradle.Properties
 import dev.greenhouseteam.greenhouseconfig.gradle.Versions
-import net.neoforged.gradle.dsl.common.runs.ide.extensions.IdeaRunExtension
 import org.apache.tools.ant.filters.LineContains
 
 plugins {
     id("greenhouseconfig.loader")
-    id("net.neoforged.gradle.userdev") version "7.0.133"
+    id("net.neoforged.moddev")
 }
 
-val at = file("src/main/resources/${Properties.MOD_ID}.cfg");
-if (at.exists())
-    minecraft.accessTransformers.file(at)
+neoForge {
+    version = Versions.NEOFORGE
+    addModdingDependenciesTo(sourceSets["test"])
 
-runs {
-    configureEach {
-        modSource(sourceSets["main"])
-        modSource(sourceSets["test"])
-        systemProperty("neoforge.enabledGameTestNamespaces", Properties.MOD_ID)
-        jvmArguments("-Dmixin.debug.verbose=true", "-Dmixin.debug.export=true")
-        extensions.configure<IdeaRunExtension>("idea") {
-            primarySourceSet = sourceSets["test"]
+    val at = project(":common").file("src/main/resources/${Properties.MOD_ID}.cfg")
+    if (at.exists())
+        accessTransformers.add(at.absolutePath)
+
+    runs {
+        configureEach {
+            systemProperty("forge.logging.markers", "REGISTRIES")
+            systemProperty("forge.logging.console.level", "debug")
+            systemProperty("neoforge.enabledGameTestNamespaces", Properties.MOD_ID)
+        }
+        create("client") {
+            client()
+            sourceSet = sourceSets["test"]
+        }
+        create("server") {
+            server()
+            programArgument("--nogui")
+            sourceSet = sourceSets["test"]
         }
     }
-    create("client") {
-    }
-    create("server") {
-        programArgument("--nogui")
+
+    mods {
+        register(Properties.MOD_ID) {
+            sourceSet(sourceSets["main"])
+            sourceSet(sourceSets["test"])
+        }
     }
 }
 
-dependencies {
-    implementation("net.neoforged:neoforge:${Versions.NEOFORGE}")
+repositories {
+    maven("https://maven.blamejared.com/") {
+        name = "Jared's maven"
+    }
 }
 
 tasks {

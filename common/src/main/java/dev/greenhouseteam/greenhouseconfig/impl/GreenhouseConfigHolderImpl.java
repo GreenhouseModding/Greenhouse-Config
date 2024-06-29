@@ -6,6 +6,8 @@ import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.platform.GHConfigIPlatformHelper;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
@@ -19,14 +21,14 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     private final T defaultClientValue;
     private final Codec<T> serverCodec;
     private final Codec<T> clientCodec;
-    private final Codec<T> networkCodec;
+    private final StreamCodec<RegistryFriendlyByteBuf, T>  networkCodec;
     private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer;
     private final Map<Integer, Codec<T>> backwardsCompatCodecs;
 
     public GreenhouseConfigHolderImpl(String modId, int configVersion,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
-                                      @Nullable Codec<T> networkCodec,
+                                      @Nullable StreamCodec<RegistryFriendlyByteBuf, T>  networkCodec,
                                       @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer,
                                       Map<Integer, Codec<T>> backwardsCompatCodecs) {
         this.modId = modId;
@@ -82,7 +84,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         return this.clientCodec;
     }
 
-    public Codec<T> getNetworkCodec() {
+    public StreamCodec<RegistryFriendlyByteBuf, T> getNetworkCodec() {
         return this.networkCodec;
     }
 

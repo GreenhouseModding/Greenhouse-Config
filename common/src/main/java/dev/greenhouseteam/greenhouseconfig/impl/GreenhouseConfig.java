@@ -18,7 +18,7 @@ public class GreenhouseConfig {
     }
 
     public static ResourceLocation asResource(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.tryBuild(MOD_ID, path);
     }
 
     public static void onServerStarting(MinecraftServer server) {

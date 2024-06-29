@@ -14,7 +14,8 @@ public class GreenhouseConfigTest {
 
     public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
             .configVersion(1)
-            .commonCodec(TestConfig.TEST_CONFIG_CODEC, TestConfig.DEFAULT)
+            .commonCodec(TestConfig.CODEC, TestConfig.DEFAULT)
+            .networkCodec(TestConfig.STREAM_CODEC)
             .postRegistryPopulation((provider, testConfig) -> {
                 LateHolderSet.bind(provider.lookupOrThrow(Registries.BIOME), testConfig.greenBiomes());
             })
@@ -24,7 +25,7 @@ public class GreenhouseConfigTest {
     }
 
     public static ResourceLocation asResource(String path) {
-        return new ResourceLocation(MOD_ID, path);
+        return ResourceLocation.tryBuild(MOD_ID, path);
     }
 
 }

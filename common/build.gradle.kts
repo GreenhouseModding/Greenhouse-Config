@@ -1,18 +1,9 @@
 import dev.greenhouseteam.greenhouseconfig.gradle.Properties
 import dev.greenhouseteam.greenhouseconfig.gradle.Versions
-import java.io.FileFilter
-import java.io.FilenameFilter
 
 plugins {
     id("greenhouseconfig.common")
-    id("org.spongepowered.gradle.vanilla") version "0.2.1-SNAPSHOT"
-}
-
-minecraft {
-    version(Versions.INTERNAL_MINECRAFT)
-    val aw = file("src/main/resources/${Properties.MOD_ID}.accesswidener")
-    if (aw.exists())
-        accessWideners(aw)
+    id("net.neoforged.moddev")
 }
 
 sourceSets {
@@ -21,6 +12,15 @@ sourceSets {
             srcDir("src/generated/resources")
         }
     }
+}
+
+neoForge {
+    neoFormVersion = Versions.NEOFORM
+    addModdingDependenciesTo(sourceSets["test"])
+
+    val at = file("src/main/resources/${Properties.MOD_ID}.cfg")
+    if (at.exists())
+        accessTransformers.add(at.absolutePath)
 }
 
 dependencies {
