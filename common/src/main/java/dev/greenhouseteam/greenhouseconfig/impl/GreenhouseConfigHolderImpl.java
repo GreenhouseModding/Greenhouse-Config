@@ -2,9 +2,8 @@ package dev.greenhouseteam.greenhouseconfig.impl;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
+import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
-import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
-import dev.greenhouseteam.greenhouseconfig.platform.GHConfigIPlatformHelper;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -12,10 +11,9 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
 import java.util.function.Function;
 
-public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> {
+public class GreenhouseConfigHolderImpl<T> implements ConfigHolder<T> {
 
     private final String configName;
     private final int schemaVersion;

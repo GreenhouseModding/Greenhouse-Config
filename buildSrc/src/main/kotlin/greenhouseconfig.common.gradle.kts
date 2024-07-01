@@ -32,6 +32,9 @@ repositories {
     maven("https://maven.fabricmc.net/") {
         name = "Fabric"
     }
+    maven("https://maven.kneelawk.com/releases/") {
+        name = "Kneelawk"
+    }
 }
 
 dependencies {
@@ -76,7 +79,7 @@ tasks {
     }
 
     val expandProps = mapOf(
-        "version" to Versions.MOD,
+        "mod_version" to Versions.MOD,
         "group" to project.group, //Else we target the task's group.
         "minecraft_version" to Versions.MINECRAFT,
         "fabric_api_version" to Versions.FABRIC_API,

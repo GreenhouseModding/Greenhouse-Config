@@ -1,9 +1,9 @@
 package dev.greenhouseteam.greenhouseconfig.api.event;
 
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
-import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
+import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
 
 @FunctionalInterface
 public interface GreenhouseConfigLoadEvent<T> {
-    void onConfigLoad(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+    void onConfigLoad(ConfigHolder<T> holder, T config, ConfigSide side);
 }

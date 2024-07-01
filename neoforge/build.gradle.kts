@@ -44,10 +44,8 @@ neoForge {
     }
 }
 
-repositories {
-    maven("https://maven.blamejared.com/") {
-        name = "Jared's maven"
-    }
+dependencies {
+    jarJar("com.kneelawk.common-events:common-events-neoforge:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")
 }
 
 tasks {

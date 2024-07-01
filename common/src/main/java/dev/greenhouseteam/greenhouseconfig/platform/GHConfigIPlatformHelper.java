@@ -1,7 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
+import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
-import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 
 import java.nio.file.Path;
 
@@ -49,26 +49,26 @@ public interface GHConfigIPlatformHelper {
      * @return The name of the environment type.
      */
     default String getEnvironmentName() {
-
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
     /**
      * Runs the loader specific post load event.
      *
-     * @param holder The config holder
-     * @param config
-     * @param side
-     * @param <T>
+     * @param holder    The config holder.
+     * @param config    The value associated with the config holder.
+     * @param side      The side of this operation.
+     * @param <T>       The config class.
      */
-    <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postLoadEvent(ConfigHolder<T> holder, T config, ConfigSide side);
 
     /**
+     * Runs the loader specific post registry population event.
      *
-     * @param holder
-     * @param config
-     * @param side
-     * @param <T>
+     * @param holder    The config holder.
+     * @param config    The value associated with the config holder.
+     * @param side      The side of this operation.
+     * @param <T>       The config class.
      */
-    <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postPopulationEvent(ConfigHolder<T> holder, T config, ConfigSide side);
 }

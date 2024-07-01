@@ -6,8 +6,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
 import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
-import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCOps;
 import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCWriter;
 import net.minecraft.core.HolderLookup;
@@ -31,8 +31,8 @@ import java.util.function.BiConsumer;
 // TODO: Handle backwards compat with config files.
 public class GreenhouseConfigStorage {
 
-    private static final Map<GreenhouseConfigHolder<?>, Object> SERVER_CONFIGS = new HashMap<>();
-    private static final Map<GreenhouseConfigHolder<?>, Object> CLIENT_CONFIGS = new HashMap<>();
+    private static final Map<ConfigHolder<?>, Object> SERVER_CONFIGS = new HashMap<>();
+    private static final Map<ConfigHolder<?>, Object> CLIENT_CONFIGS = new HashMap<>();
 
     public static <T> T getConfig(GreenhouseConfigHolderImpl<T> holder) {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER;
@@ -43,7 +43,7 @@ public class GreenhouseConfigStorage {
     }
 
     public static void generateServerConfigs(RegistryAccess registries) {
-        for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values()) {
+        for (ConfigHolder<?> config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values()) {
             GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
             loadConfig(holder, registries, SERVER_CONFIGS::put);
             GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), ConfigSide.SERVER);
@@ -51,7 +51,7 @@ public class GreenhouseConfigStorage {
     }
 
     public static void generateClientConfigs() {
-        for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values()) {
+        for (ConfigHolder<?> config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values()) {
             GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
             loadConfig(holder, null, CLIENT_CONFIGS::put);
             GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), ConfigSide.CLIENT);
@@ -60,14 +60,14 @@ public class GreenhouseConfigStorage {
 
     public static void onRegistryPopulation(HolderLookup.Provider registries) {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER;
-        Map<GreenhouseConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
-        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet()) {
+        Map<ConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
+        for (Map.Entry<ConfigHolder<?>, Object> entry : configs.entrySet()) {
             ((GreenhouseConfigHolderImpl<Object>)entry.getKey()).postRegistryPopulation(registries, entry.getValue());
-            GreenhouseConfig.getPlatform().postPopulationEvent((GreenhouseConfigHolder<Object>) entry.getKey(), entry.getValue(), GreenhouseConfig.getPlatform().getSide());
+            GreenhouseConfig.getPlatform().postPopulationEvent((ConfigHolder<Object>) entry.getKey(), entry.getValue(), GreenhouseConfig.getPlatform().getSide());
         }
     }
 
-    public static <T> void loadConfig(GreenhouseConfigHolderImpl<T> holder, @Nullable RegistryAccess registries, BiConsumer<GreenhouseConfigHolder<?>, Object> consumer) {
+    public static <T> void loadConfig(GreenhouseConfigHolderImpl<T> holder, @Nullable RegistryAccess registries, BiConsumer<ConfigHolder<?>, Object> consumer) {
         File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
         DynamicOps<CommentedJson> ops = registries != null ? RegistryOps.create(JsonCOps.INSTANCE, registries) : JsonCOps.INSTANCE;
 
@@ -136,7 +136,7 @@ public class GreenhouseConfigStorage {
         }
     }
 
-    private static void writeSchemaVersion(File file, GreenhouseConfigHolder<?> holder) throws IOException {
+    private static void writeSchemaVersion(File file, ConfigHolder<?> holder) throws IOException {
         Files.setAttribute(file.toPath(), "user:GreenhouseConfigSchemaVersion", ByteBuffer.wrap(String.valueOf(holder.getSchemaVersion()).getBytes(StandardCharsets.UTF_8)));
     }
 
@@ -148,7 +148,7 @@ public class GreenhouseConfigStorage {
         return Integer.parseInt(StandardCharsets.UTF_8.decode(buffer).toString());
     }
 
-    private static void logSchema(File file, GreenhouseConfigHolder<?> holder) {
+    private static void logSchema(File file, ConfigHolder<?> holder) {
         try {
             if (Files.getFileAttributeView(file.toPath(), UserDefinedFileAttributeView.class).list().contains("GreenhouseConfigSchemaVersion"))
                 GreenhouseConfig.LOG.debug("Config '{}'s schema version is {}.", holder.getConfigName(), readSchemaVersion(file));

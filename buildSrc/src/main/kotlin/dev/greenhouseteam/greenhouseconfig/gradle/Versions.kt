@@ -6,6 +6,7 @@ object Versions {
     const val MINECRAFT = "1.21"
     const val INTERNAL_MINECRAFT = "1.21"
     const val NEOFORM = "$MINECRAFT-20240613.152323"
+    const val COMMON_EVENTS = "1.0.0"
 
     const val FABRIC_API = "0.100.4+1.21"
     const val FABRIC_LOADER = "0.15.11"

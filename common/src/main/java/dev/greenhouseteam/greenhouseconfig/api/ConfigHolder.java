@@ -2,8 +2,6 @@ package dev.greenhouseteam.greenhouseconfig.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DynamicOps;
-import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
@@ -12,15 +10,12 @@ import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import java.util.function.BiConsumer;
-import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 // TODO: Documentation.
-public interface GreenhouseConfigHolder<T> {
+public interface ConfigHolder<T> {
 
     /**
      * Gets the schema version for this config.
@@ -54,7 +49,7 @@ public interface GreenhouseConfigHolder<T> {
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsClient = ImmutableMap.builder();
 
         /**
-         * Constructs a {@link GreenhouseConfigHolder.Builder} with the specified config name.
+         * Constructs a {@link ConfigHolder.Builder} with the specified config name.
          * Configs will be inside the config folder as 'config_name'.jsonc
          *
          * @param configName The name to create a config for.
@@ -203,9 +198,9 @@ public interface GreenhouseConfigHolder<T> {
 
         /**
          * Builds and registers this config.
-         * @return  A {@link GreenhouseConfigHolder} that holds this config.
+         * @return  A {@link ConfigHolder} that holds this config.
          */
-        public GreenhouseConfigHolder<T> buildAndRegister() {
+        public ConfigHolder<T> buildAndRegister() {
             if (configName == null)
                 throw new UnsupportedOperationException("Attempted to build config without a modid.");
 

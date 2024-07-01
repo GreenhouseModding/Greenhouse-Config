@@ -9,13 +9,13 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 
-@Mod(GreenhouseConfig.MOD_ID)
+@Mod(GreenhouseConfigTest.MOD_ID)
 public class GreenhouseConfigTestNeoForge {
     public GreenhouseConfigTestNeoForge(IEventBus bus) {
         GreenhouseConfigTest.init();
     }
 
-    @EventBusSubscriber(modid = GreenhouseConfig.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
+    @EventBusSubscriber(modid = GreenhouseConfigTest.MOD_ID, bus = EventBusSubscriber.Bus.MOD)
     private static class GameEvents {
         @SubscribeEvent
         public static void onPostPopulation(GreenhouseConfigEvents.PostPopulation<?> event) {
