@@ -2,13 +2,12 @@ package dev.greenhouseteam.greenhouseconfig.test.config;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import dev.greenhouseteam.greenhouseconfig.impl.codec.LateHolderSetCodec;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
 import dev.greenhouseteam.greenhouseconfig.api.codec.GreenhouseConfigCodecs;
 import dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTest;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -30,7 +29,7 @@ public record TestConfig(int silly, HolderSet<Block> redBlocks, HolderSet<Biome>
             GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.commentedCodec(List.of("Biomes that are green", "This is an extra line to show how green they really are!"), GreenhouseConfigCodecs.lateHoldersCodec(Registries.BIOME)), "green_biomes", DEFAULT.greenBiomes()).forGetter(TestConfig::greenBiomes)
     ).apply(inst, TestConfig::new));
 
-    public static final StreamCodec<RegistryFriendlyByteBuf, TestConfig> STREAM_CODEC = StreamCodec.composite(
+    public static final StreamCodec<FriendlyByteBuf, TestConfig> STREAM_CODEC = StreamCodec.composite(
             ByteBufCodecs.INT,
             TestConfig::silly,
             GreenhouseConfigCodecs.lateHoldersStreamCodec(Registries.BLOCK),

@@ -26,8 +26,7 @@ dependencies {
     modImplementation("net.fabricmc.fabric-api:fabric-api:${Versions.FABRIC_API}")
     modLocalRuntime("com.terraformersmc:modmenu:${Versions.MOD_MENU}")
 
-    modImplementation("com.kneelawk.common-events:common-events-fabric:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")
-    include("com.kneelawk.common-events:common-events-fabric:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")
+    modImplementation("com.kneelawk.common-events:common-events-fabric:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")?.let { include(it) }
 }
 
 loom {
@@ -52,6 +51,7 @@ loom {
             runDir("runs/client")
             setSource(sourceSets["test"])
             ideConfigGenerated(true)
+            programArgs("--username=Dev")
             vmArgs("-Dmixin.debug.verbose=true", "-Dmixin.debug.export=true")
         }
         named("server") {

@@ -1,14 +1,17 @@
 package dev.greenhouseteam.greenhouseconfig.impl.client;
 
+import dev.greenhouseteam.greenhouseconfig.impl.network.SyncGreenhouseConfigPacket;
 import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.fabric.api.client.networking.v1.ClientConfigurationNetworking;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 
 public class GreenhouseConfigFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         GreenhouseConfigClient.init();
-        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
-            GreenhouseConfigClient.onWorldJoin(client.level.registryAccess());
-        });
+        ClientConfigurationNetworking.registerGlobalReceiver(SyncGreenhouseConfigPacket.TYPE, (payload, context) -> payload.handle());
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
+                GreenhouseConfigClient.onWorldJoin(client.level.registryAccess())
+        );
     }
 }

@@ -28,8 +28,8 @@ public class CommentedCodec<T> implements Codec<T> {
     @Override
     public <T1> DataResult<T1> encode(T input, DynamicOps<T1> ops, T1 prefix) {
         DataResult<T1> result = baseCodec.encode(input, ops, prefix);
-        if ((ops instanceof JsonCOps || ops instanceof DelegatingOps<T1> delegatingOps && ((DelegatingOpsAccessor)delegatingOps).greenhouseconfig$getDelegate() instanceof JsonCOps) && result.error().isEmpty()) {
-            CommentedJson element = (CommentedJson) result.getOrThrow();
+        if ((ops instanceof JsonCOps || ops instanceof DelegatingOps<T1> delegatingOps && ((DelegatingOpsAccessor)delegatingOps).greenhouseconfig$getDelegate() instanceof JsonCOps) && result.hasResultOrPartial()) {
+            CommentedJson element = (CommentedJson) result.getPartialOrThrow();
             element = new CommentedJson(element.json(), comments.toArray(String[]::new));
             return DataResult.success((T1)element);
         }

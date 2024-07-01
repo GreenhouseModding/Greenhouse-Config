@@ -35,7 +35,7 @@ public class GreenhouseConfigEvents {
 
         @ApiStatus.Internal
         public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
-            PostLoad<T> event = new PostLoad<T>(modId, config, side);
+            PostLoad<T> event = new PostLoad<>(modId, config, side);
             ModLoader.postEvent(event);
         }
     }
@@ -69,7 +69,7 @@ public class GreenhouseConfigEvents {
 
         @ApiStatus.Internal
         public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
-            PostLoad<T> event = new PostLoad<T>(modId, config, side);
+            PostPopulation<T> event = new PostPopulation<>(modId, config, side);
             ModLoader.postEvent(event);
         }
     }

@@ -21,8 +21,8 @@ public class GreenhouseConfig {
         return ResourceLocation.tryBuild(MOD_ID, path);
     }
 
-    public static void onServerStarting(MinecraftServer server) {
-        GreenhouseConfigStorage.generateServerConfigs(server.registryAccess());
+    public static void onServerStarting() {
+        GreenhouseConfigStorage.generateServerConfigs();
     }
 
     public static void onServerStarted(MinecraftServer server) {

@@ -4,13 +4,13 @@ import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
+import dev.greenhouseteam.greenhouseconfig.impl.codec.DefaultedCodec;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.LateHolderSetCodec;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.CommentedCodec;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.VarInt;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.resources.ResourceKey;
@@ -23,10 +23,7 @@ import java.util.Optional;
 
 public class GreenhouseConfigCodecs {
     public static <A> MapCodec<A> defaultFieldCodec(final Codec<A> codec, final String name, final A defaultValue) {
-        return codec.optionalFieldOf(name).xmap(
-                Optional::orElseThrow,
-                Optional::of
-        );
+        return new DefaultedCodec<>(name, codec, defaultValue).setPartial(() -> defaultValue);
     }
 
     public static <A> Codec<A> commentedCodec(List<String> comments, Codec<A> codec) {
@@ -37,12 +34,11 @@ public class GreenhouseConfigCodecs {
         return new LateHolderSetCodec<>(registry);
     }
 
-    public static <T> StreamCodec<RegistryFriendlyByteBuf, HolderSet<T>> lateHoldersStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
+    public static <T> StreamCodec<ByteBuf, HolderSet<T>> lateHoldersStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
         return new StreamCodec<>() {
-            private static final int NAMED_SET = -1;
             private final StreamCodec<ByteBuf, ResourceKey<T>> holderCodec = ResourceKey.streamCodec(registryKey);
 
-            public HolderSet<T> decode(RegistryFriendlyByteBuf buf) {
+            public HolderSet<T> decode(ByteBuf buf) {
                 int i = VarInt.read(buf) - 1;
                 if (i == -1) {
                     return LateHolderSet.createFromTags((ResourceKey<Registry<T>>) registryKey, List.of(TagKey.create(registryKey, ResourceLocation.STREAM_CODEC.decode(buf))));
@@ -62,11 +58,11 @@ public class GreenhouseConfigCodecs {
                 }
             }
 
-            public void encode(RegistryFriendlyByteBuf buf, HolderSet<T> holderSet) {
+            public void encode(ByteBuf buf, HolderSet<T> holderSet) {
                 Optional<TagKey<T>> optional = holderSet.unwrapKey();
                 if (optional.isPresent()) {
                     VarInt.write(buf, -1);
-                    ResourceLocation.STREAM_CODEC.encode(buf, ((TagKey) optional.get()).location());
+                    ResourceLocation.STREAM_CODEC.encode(buf, optional.get().location());
                 } else {
                     VarInt.write(buf, holderSet.size() + 1);
                     if (holderSet instanceof LateHolderSet<T> late) {

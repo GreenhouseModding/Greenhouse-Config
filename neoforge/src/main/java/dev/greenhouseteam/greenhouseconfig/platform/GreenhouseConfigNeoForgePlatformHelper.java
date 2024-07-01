@@ -30,7 +30,7 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
 
     @Override
     public ConfigSide getSide() {
-        return GreenhouseConfigNeoForge.isDedicatedServerContext() ? ConfigSide.SERVER : ConfigSide.CLIENT;
+        return GreenhouseConfigNeoForge.isDedicatedServerContext() ? ConfigSide.DEDICATED_SERVER : ConfigSide.CLIENT;
     }
 
     @Override

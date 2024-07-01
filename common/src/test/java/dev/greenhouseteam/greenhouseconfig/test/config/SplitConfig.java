@@ -4,7 +4,7 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import dev.greenhouseteam.greenhouseconfig.api.codec.GreenhouseConfigCodecs;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.TextColor;
 import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
@@ -22,8 +22,8 @@ public record SplitConfig(TextColor color, ClientConfigValues clientValues) {
             ClientConfigValues.CODEC.forGetter(SplitConfig::clientValues)
     ).apply(inst, SplitConfig::new));
 
-    public static StreamCodec<RegistryFriendlyByteBuf, SplitConfig> streamCodec(SplitConfig clientConfig) {
-        return ByteBufCodecs.fromCodecWithRegistries(TextColor.CODEC).map(textColor -> new SplitConfig(textColor, clientConfig.clientValues()), SplitConfig::color);
+    public static StreamCodec<FriendlyByteBuf, SplitConfig> streamCodec(SplitConfig clientConfig) {
+        return ByteBufCodecs.fromCodec(TextColor.CODEC).<FriendlyByteBuf>cast().map(textColor -> new SplitConfig(textColor, clientConfig.clientValues()), SplitConfig::color);
     }
 
     public record ClientConfigValues(TextColor color) {

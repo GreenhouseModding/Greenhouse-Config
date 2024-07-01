@@ -6,7 +6,7 @@ import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
 import net.minecraft.core.HolderLookup;
-import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 
 import java.util.HashSet;
@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-// TODO: Documentation.
 public interface GreenhouseConfigHolder<T> {
 
     /**
@@ -29,10 +28,18 @@ public interface GreenhouseConfigHolder<T> {
      */
     String getConfigName();
 
+    /**
+     * Gets the config of this holder.
+     * @return  Returns the config.
+     */
     default T get() {
         return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<T>) this);
     }
 
+    /**
+     * Gets the default value for this config holder.
+     * @return  The default value of this config holder.
+     */
     T getDefaultValue();
 
     class Builder<T> {
@@ -42,7 +49,7 @@ public interface GreenhouseConfigHolder<T> {
         private T defaultClientValue;
         private Codec<T> serverCodec;
         private Codec<T> clientCodec;
-        private Function<T, StreamCodec<RegistryFriendlyByteBuf, T>> networkCodecFunction;
+        private Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
         private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsServer = ImmutableMap.builder();
         private final Set<Integer> backwardsCompatClientVersions = new HashSet<>();
@@ -113,23 +120,25 @@ public interface GreenhouseConfigHolder<T> {
 
         /**
          * Sets the config to serialize over the network.
+         * Setting specified values from the server on the client.
          * <p>
          * If the client does not have the mod that this config originates
          * from this will be ignored.
          *
          * @param streamCodec   The stream codec to use for serialization.
          */
-        public Builder<T> networkSerializable(StreamCodec<RegistryFriendlyByteBuf, T> streamCodec) {
+        public Builder<T> networkSerializable(StreamCodec<FriendlyByteBuf, T> streamCodec) {
             return networkSerializable(clientConfig -> streamCodec);
         }
 
         /**
          * Sets the config to serialize over the network.
+         * Setting specified values from the server on the client.
          *
          * @param streamCodecFunction   The stream codec to use for serialization,
          *                              whilst passing the current client config.
          */
-        public Builder<T> networkSerializable(Function<T, StreamCodec<RegistryFriendlyByteBuf, T>> streamCodecFunction) {
+        public Builder<T> networkSerializable(Function<T, StreamCodec<FriendlyByteBuf, T>> streamCodecFunction) {
             networkCodecFunction = streamCodecFunction;
             return this;
         }

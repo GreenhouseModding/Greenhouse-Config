@@ -4,9 +4,11 @@ import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigFabric;
+import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.nio.file.Path;
+import java.util.Map;
 
 public class GreenhouseConfigFabricPlatformHelper implements GHConfigIPlatformHelper {
 
@@ -29,7 +31,7 @@ public class GreenhouseConfigFabricPlatformHelper implements GHConfigIPlatformHe
 
     @Override
     public ConfigSide getSide() {
-        return GreenhouseConfigFabric.isDedicatedServerContext() ? ConfigSide.SERVER : ConfigSide.CLIENT;
+        return GreenhouseConfigFabric.isDedicatedServerContext() ? ConfigSide.DEDICATED_SERVER : ConfigSide.CLIENT;
     }
 
     @Override
