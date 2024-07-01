@@ -7,15 +7,20 @@ plugins {
 }
 
 repositories {
-    maven {
+    maven("https://maven.terraformersmc.com/") {
         name = "TerraformersMC"
-        url = uri("https://maven.terraformersmc.com/")
+    }
+    maven("https://maven.parchmentmc.org") {
+        name = "ParchmentMC"
     }
 }
 
 dependencies {
     minecraft("com.mojang:minecraft:${Versions.INTERNAL_MINECRAFT}")
-    mappings(loom.officialMojangMappings())
+    mappings(loom.layered {
+        officialMojangMappings()
+        parchment("org.parchmentmc.data:parchment-${Versions.INTERNAL_MINECRAFT}:${Versions.PARCHMENT}@zip")
+    })
 
     modImplementation("net.fabricmc:fabric-loader:${Versions.FABRIC_LOADER}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${Versions.FABRIC_API}")

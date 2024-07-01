@@ -9,6 +9,10 @@ plugins {
 
 neoForge {
     version = Versions.NEOFORGE
+    parchment {
+        minecraftVersion = Versions.INTERNAL_MINECRAFT
+        mappingsVersion = Versions.PARCHMENT
+    }
     addModdingDependenciesTo(sourceSets["test"])
 
     val at = project(":common").file("src/main/resources/${Properties.MOD_ID}.cfg")
