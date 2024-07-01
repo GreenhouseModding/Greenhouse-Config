@@ -1,6 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
-import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 
 import java.nio.file.Path;
@@ -60,7 +60,7 @@ public interface GHConfigIPlatformHelper {
      * @param side      The side of this operation.
      * @param <T>       The config class.
      */
-    <T> void postLoadEvent(ConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
 
     /**
      * Runs the loader specific post registry population event.
@@ -70,5 +70,5 @@ public interface GHConfigIPlatformHelper {
      * @param side      The side of this operation.
      * @param <T>       The config class.
      */
-    <T> void postPopulationEvent(ConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
 }

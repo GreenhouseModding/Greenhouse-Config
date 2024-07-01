@@ -1,6 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
-import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigNeoForge;
 import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
@@ -39,12 +39,12 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
     }
 
     @Override
-    public <T> void postLoadEvent(ConfigHolder<T> holder, T config, ConfigSide side) {
+    public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
         GreenhouseConfigEvents.PostLoad.post(holder, config, side);
     }
 
     @Override
-    public <T> void postPopulationEvent(ConfigHolder<T> holder, T config, ConfigSide side) {
+    public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
         GreenhouseConfigEvents.PostPopulation.post(holder, config, side);
     }
 }

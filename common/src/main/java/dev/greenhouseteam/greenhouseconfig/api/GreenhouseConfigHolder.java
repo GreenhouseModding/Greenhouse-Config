@@ -15,7 +15,7 @@ import java.util.function.BiConsumer;
 import java.util.function.Function;
 
 // TODO: Documentation.
-public interface ConfigHolder<T> {
+public interface GreenhouseConfigHolder<T> {
 
     /**
      * Gets the schema version for this config.
@@ -49,7 +49,7 @@ public interface ConfigHolder<T> {
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsClient = ImmutableMap.builder();
 
         /**
-         * Constructs a {@link ConfigHolder.Builder} with the specified config name.
+         * Constructs a {@link GreenhouseConfigHolder.Builder} with the specified config name.
          * Configs will be inside the config folder as 'config_name'.jsonc
          *
          * @param configName The name to create a config for.
@@ -198,9 +198,9 @@ public interface ConfigHolder<T> {
 
         /**
          * Builds and registers this config.
-         * @return  A {@link ConfigHolder} that holds this config.
+         * @return  A {@link GreenhouseConfigHolder} that holds this config.
          */
-        public ConfigHolder<T> buildAndRegister() {
+        public GreenhouseConfigHolder<T> buildAndRegister() {
             if (configName == null)
                 throw new UnsupportedOperationException("Attempted to build config without a modid.");
 

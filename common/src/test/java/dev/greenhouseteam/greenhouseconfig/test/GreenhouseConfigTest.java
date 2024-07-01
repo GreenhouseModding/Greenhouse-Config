@@ -1,6 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.test;
 
-import dev.greenhouseteam.greenhouseconfig.api.ConfigHolder;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
 import dev.greenhouseteam.greenhouseconfig.test.config.SplitConfig;
 import dev.greenhouseteam.greenhouseconfig.test.config.TestConfig;
@@ -14,7 +14,7 @@ public class GreenhouseConfigTest {
     public static final String MOD_ID = "greenhouseconfig_test";
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
-    public static final ConfigHolder<TestConfig> CONFIG = new ConfigHolder.Builder<TestConfig>(MOD_ID + "_main")
+    public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID + "_main")
             /*
             .configVersion(1)
             .commonCodec(TestConfig.CompatCodecs.V1, TestConfig.DEFAULT)
@@ -37,7 +37,7 @@ public class GreenhouseConfigTest {
             .backwardsCompatCommon(1, TestConfig.CompatCodecs.V1)
             .buildAndRegister();
 
-    public static final ConfigHolder<SplitConfig> SPLIT = new ConfigHolder.Builder<SplitConfig>(MOD_ID + "_split")
+    public static final GreenhouseConfigHolder<SplitConfig> SPLIT = new GreenhouseConfigHolder.Builder<SplitConfig>(MOD_ID + "_split")
             .schemaVersion(1)
             .server(SplitConfig.SERVER_CODEC, SplitConfig.DEFAULT)
             .client(SplitConfig.CLIENT_CODEC, SplitConfig.DEFAULT)
