@@ -1,15 +1,15 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
+import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
-import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
-import io.netty.buffer.ByteBuf;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
+import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.FriendlyByteBuf;
-import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import org.jetbrains.annotations.Nullable;
 
@@ -25,7 +25,11 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     private final T defaultClientValue;
     private final Codec<T> serverCodec;
     private final Codec<T> clientCodec;
+    @Nullable
+    private final LiteralArgumentBuilder<CommandSourceStack> reloadCommandStarter;
+    @Nullable
     private final Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
+    @Nullable
     private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
     private final Map<Integer, Codec<T>> backwardsCompatCodecsServer;
     private final Map<Integer, Codec<T>> backwardsCompatCodecsClient;
@@ -33,6 +37,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     public GreenhouseConfigHolderImpl(String configName, int schemaVersion,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
+                                      @Nullable LiteralArgumentBuilder<CommandSourceStack> reloadCommandStarter,
                                       @Nullable Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction,
                                       @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback,
                                       Map<Integer, Codec<T>> backwardsCompatCodecsServer,
@@ -43,6 +48,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         this.defaultClientValue = defaultClientValue;
         this.serverCodec = serverCodec;
         this.clientCodec = clientCodec;
+        this.reloadCommandStarter = reloadCommandStarter;
         this.networkCodecFunction = networkCodecFunction;
         this.postRegistryPopulationCallback = postRegistryPopulationCallback;
         this.backwardsCompatCodecsServer = backwardsCompatCodecsServer;
@@ -56,16 +62,16 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
 
     @Override
     public T getDefaultValue() {
-        return GreenhouseConfig.getPlatform().getSide() == ConfigSide.DEDICATED_SERVER ? defaultServerValue : defaultClientValue;
+        return GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? defaultServerValue : defaultClientValue;
     }
 
     public <E> E encode(DynamicOps<E> ops, T value) {
-        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
+        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
         return codec.encodeStart(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.configName + "'. " + s));
     }
 
     public <E> DataResult<Pair<T, E>> decode(DynamicOps<E> ops, E value) {
-        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
+        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
         return codec.decode(ops, value);
     }
 
@@ -80,14 +86,20 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     }
 
     @Nullable
+    public LiteralArgumentBuilder<CommandSourceStack> getReloadCommandStarter() {
+        return reloadCommandStarter;
+    }
+
+    @Nullable
     public StreamCodec<FriendlyByteBuf, T> getNetworkCodec(T clientConfig) {
         if (networkCodecFunction == null)
             return null;
         return networkCodecFunction.apply(clientConfig);
     }
 
+    @Nullable
     public Codec<T> getBackwardsCompatCodec(int configVersion) {
-        return GreenhouseConfig.getPlatform().getSide() == ConfigSide.DEDICATED_SERVER ? backwardsCompatCodecsServer.get(configVersion) : backwardsCompatCodecsClient.get(configVersion);
+        return GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? backwardsCompatCodecsServer.get(configVersion) : backwardsCompatCodecsClient.get(configVersion);
     }
 
     @Override

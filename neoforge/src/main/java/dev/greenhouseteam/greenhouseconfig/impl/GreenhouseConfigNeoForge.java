@@ -1,7 +1,9 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
+import dev.greenhouseteam.greenhouseconfig.impl.network.QuerySyncGreenhouseConfigPacket;
 import dev.greenhouseteam.greenhouseconfig.impl.network.SyncGreenhouseConfigPacket;
 import dev.greenhouseteam.greenhouseconfig.platform.GreenhouseConfigNeoForgePlatformHelper;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -36,7 +38,13 @@ public class GreenhouseConfigNeoForge {
         public static void registerNetwork(RegisterPayloadHandlersEvent event) {
             event.registrar("1.0.0") // Change this to the version that broke things if something breaks.
                     .optional()
-                    .configurationToClient(SyncGreenhouseConfigPacket.TYPE, SyncGreenhouseConfigPacket.STREAM_CODEC, (payload, context) -> payload.handle());
+                    .commonToClient(SyncGreenhouseConfigPacket.TYPE, SyncGreenhouseConfigPacket.STREAM_CODEC, (payload, context) -> {
+                        if (context.protocol().isConfiguration())
+                            payload.handleConfiguration();
+                        else
+                            payload.handlePlay();
+                    })
+                    .playToServer(QuerySyncGreenhouseConfigPacket.TYPE, QuerySyncGreenhouseConfigPacket.STREAM_CODEC, (payload, context) -> payload.handle((ServerPlayer) context.player()));
         }
     }
 
@@ -52,7 +60,8 @@ public class GreenhouseConfigNeoForge {
 
         @SubscribeEvent
         public static void onServerStarted(ServerStartedEvent event) {
-            GreenhouseConfig.onServerStarted(event.getServer());
+            if (event.getServer().isDedicatedServer())
+                GreenhouseConfig.onServerStarted(event.getServer());
         }
     }
 }

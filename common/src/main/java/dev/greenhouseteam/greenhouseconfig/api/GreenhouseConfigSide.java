@@ -1,6 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.api;
 
-public enum ConfigSide {
+public enum GreenhouseConfigSide {
     CLIENT,
     DEDICATED_SERVER
 }

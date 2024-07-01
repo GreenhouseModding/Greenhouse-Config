@@ -9,9 +9,9 @@ public class GreenhouseConfigEvents {
     public static class PostLoad<T> extends Event implements IModBusEvent {
         private final GreenhouseConfigHolder<T> holder;
         private final T config;
-        private final ConfigSide side;
+        private final GreenhouseConfigSide side;
 
-        private PostLoad(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+        private PostLoad(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
             this.holder = holder;
             this.config = config;
             this.side = side;
@@ -29,12 +29,12 @@ public class GreenhouseConfigEvents {
             return config;
         }
 
-        public ConfigSide getSide() {
+        public GreenhouseConfigSide getSide() {
             return side;
         }
 
         @ApiStatus.Internal
-        public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
+        public static <T> void post(GreenhouseConfigHolder<T> modId, T config, GreenhouseConfigSide side) {
             PostLoad<T> event = new PostLoad<>(modId, config, side);
             ModLoader.postEvent(event);
         }
@@ -43,9 +43,9 @@ public class GreenhouseConfigEvents {
     public static class PostPopulation<T> extends Event implements IModBusEvent {
         private final GreenhouseConfigHolder<T> holder;
         private final T config;
-        private final ConfigSide side;
+        private final GreenhouseConfigSide side;
 
-        private PostPopulation(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+        private PostPopulation(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
             this.holder = holder;
             this.config = config;
             this.side = side;
@@ -63,12 +63,12 @@ public class GreenhouseConfigEvents {
             return config;
         }
 
-        public ConfigSide getSide() {
+        public GreenhouseConfigSide getSide() {
             return side;
         }
 
         @ApiStatus.Internal
-        public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
+        public static <T> void post(GreenhouseConfigHolder<T> modId, T config, GreenhouseConfigSide side) {
             PostPopulation<T> event = new PostPopulation<>(modId, config, side);
             ModLoader.postEvent(event);
         }

@@ -1,9 +1,14 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
+import com.mojang.brigadier.context.CommandContext;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
-import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 
 import java.nio.file.Path;
+import java.util.function.Supplier;
 
 public interface GHConfigIPlatformHelper {
 
@@ -35,13 +40,17 @@ public interface GHConfigIPlatformHelper {
      *
      * @return The side.
      */
-    ConfigSide getSide();
+    GreenhouseConfigSide getSide();
 
     /**
      * Gets the config path.
      * @return The config path.
      */
     Path getConfigPath();
+
+    void sendSuccessClient(CommandContext<?> context, Component component);
+
+    void sendFailureClient(CommandContext<?> context, Component component);
 
     /**
      * Gets the name of the environment type as a string.
@@ -52,6 +61,10 @@ public interface GHConfigIPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
+    <T> void syncConfig(GreenhouseConfigHolder<T> holder, MinecraftServer server, ServerPlayer player);
+
+    <T> boolean queryConfig(GreenhouseConfigHolder<T> holder);
+
     /**
      * Runs the loader specific post load event.
      *
@@ -60,7 +73,7 @@ public interface GHConfigIPlatformHelper {
      * @param side      The side of this operation.
      * @param <T>       The config class.
      */
-    <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side);
 
     /**
      * Runs the loader specific post registry population event.
@@ -70,5 +83,5 @@ public interface GHConfigIPlatformHelper {
      * @param side      The side of this operation.
      * @param <T>       The config class.
      */
-    <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
+    <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side);
 }

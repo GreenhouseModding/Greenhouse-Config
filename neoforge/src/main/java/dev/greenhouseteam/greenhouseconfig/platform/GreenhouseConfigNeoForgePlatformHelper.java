@@ -1,12 +1,21 @@
 package dev.greenhouseteam.greenhouseconfig.platform;
 
+import com.mojang.brigadier.context.CommandContext;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigNeoForge;
-import dev.greenhouseteam.greenhouseconfig.api.ConfigSide;
+import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
+import dev.greenhouseteam.greenhouseconfig.impl.network.QuerySyncGreenhouseConfigPacket;
+import dev.greenhouseteam.greenhouseconfig.impl.network.SyncGreenhouseConfigPacket;
+import net.minecraft.client.Minecraft;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerPlayer;
 import net.neoforged.fml.ModList;
 import net.neoforged.fml.loading.FMLLoader;
 import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.ClientCommandSourceStack;
+import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.nio.file.Path;
 
@@ -18,19 +27,17 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
 
     @Override
     public boolean isModLoaded(String modId) {
-
         return ModList.get().isLoaded(modId);
     }
 
     @Override
     public boolean isDevelopmentEnvironment() {
-
         return !FMLLoader.isProduction();
     }
 
     @Override
-    public ConfigSide getSide() {
-        return GreenhouseConfigNeoForge.isDedicatedServerContext() ? ConfigSide.DEDICATED_SERVER : ConfigSide.CLIENT;
+    public GreenhouseConfigSide getSide() {
+        return GreenhouseConfigNeoForge.isDedicatedServerContext() ? GreenhouseConfigSide.DEDICATED_SERVER : GreenhouseConfigSide.CLIENT;
     }
 
     @Override
@@ -39,12 +46,37 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
     }
 
     @Override
-    public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+    public void sendSuccessClient(CommandContext<?> context, Component component) {
+        ((ClientCommandSourceStack)context.getSource()).sendSuccess(() -> component, false);
+    }
+
+    @Override
+    public void sendFailureClient(CommandContext<?> context, Component component) {
+        ((ClientCommandSourceStack)context.getSource()).sendFailure(component);
+    }
+
+    @Override
+    public <T> void syncConfig(GreenhouseConfigHolder<T> holder, MinecraftServer server, ServerPlayer player) {
+        if (!player.connection.hasChannel(SyncGreenhouseConfigPacket.TYPE) || server.isSingleplayerOwner(player.getGameProfile()))
+            return;
+        PacketDistributor.sendToPlayer(player, new SyncGreenhouseConfigPacket(holder.getConfigName(), holder.get()));
+    }
+
+    @Override
+    public <T> boolean queryConfig(GreenhouseConfigHolder<T> holder) {
+        if (!Minecraft.getInstance().getConnection().hasChannel(SyncGreenhouseConfigPacket.TYPE) || Minecraft.getInstance().isLocalServer())
+            return false;
+        PacketDistributor.sendToServer(new QuerySyncGreenhouseConfigPacket(holder));
+        return true;
+    }
+
+    @Override
+    public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
         GreenhouseConfigEvents.PostLoad.post(holder, config, side);
     }
 
     @Override
-    public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side) {
+    public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
         GreenhouseConfigEvents.PostPopulation.post(holder, config, side);
     }
 }

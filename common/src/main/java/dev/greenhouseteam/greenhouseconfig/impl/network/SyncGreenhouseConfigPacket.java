@@ -40,12 +40,22 @@ public record SyncGreenhouseConfigPacket(String configName, @Nullable Object con
         streamCodec.encode(buf, packet.config);
     }
 
-    public void handle() {
+    public void handleConfiguration() {
         Minecraft.getInstance().execute(() -> {
             if (config == null)
                 return;
             GreenhouseConfigHolder<Object> holder = (GreenhouseConfigHolder<Object>) GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.get(configName);
             GreenhouseConfigStorage.updateConfig(holder, config);
+        });
+    }
+
+    public void handlePlay() {
+        Minecraft.getInstance().execute(() -> {
+            if (config == null)
+                return;
+            GreenhouseConfigHolder<Object> holder = (GreenhouseConfigHolder<Object>) GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.get(configName);
+            GreenhouseConfigStorage.updateConfig(holder, config);
+
         });
     }
 
