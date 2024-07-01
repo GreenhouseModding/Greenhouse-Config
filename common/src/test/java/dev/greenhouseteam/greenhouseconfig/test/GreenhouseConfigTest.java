@@ -2,7 +2,9 @@ package dev.greenhouseteam.greenhouseconfig.test;
 
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
+import dev.greenhouseteam.greenhouseconfig.test.config.SplitConfig;
 import dev.greenhouseteam.greenhouseconfig.test.config.TestConfig;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
@@ -12,13 +14,34 @@ public class GreenhouseConfigTest {
     public static final String MOD_ID = "greenhouseconfig_test";
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
-    public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
+    public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID + "_main")
+            /*
             .configVersion(1)
-            .commonCodec(TestConfig.CODEC, TestConfig.DEFAULT)
-            .networkCodec(TestConfig.STREAM_CODEC)
+            .commonCodec(TestConfig.CompatCodecs.V1, TestConfig.DEFAULT)
+            */
+            .schemaVersion(2)
+            .common(TestConfig.CODEC, TestConfig.DEFAULT)
+            .networkSerializable(TestConfig.STREAM_CODEC)
             .postRegistryPopulation((provider, testConfig) -> {
-                LateHolderSet.bind(provider.lookupOrThrow(Registries.BIOME), testConfig.greenBiomes());
+                LateHolderSet.bind(
+                        BuiltInRegistries.BLOCK.asLookup(),
+                        testConfig.redBlocks(),
+                        s -> LOG.error("Error while parsing \"red_blocks\" in config/greenhouseconfig_test.jsonc: {}", s)
+                );
+                LateHolderSet.bind(
+                        provider.lookupOrThrow(Registries.BIOME),
+                        testConfig.greenBiomes(),
+                        s -> LOG.error("Error while parsing \"green_biomes\" in config/greenhouseconfig_test.jsonc: {}", s)
+                );
             })
+            .backwardsCompatCommon(1, TestConfig.CompatCodecs.V1)
+            .buildAndRegister();
+
+    public static final GreenhouseConfigHolder<SplitConfig> SPLIT = new GreenhouseConfigHolder.Builder<SplitConfig>(MOD_ID + "_split")
+            .schemaVersion(1)
+            .server(SplitConfig.SERVER_CODEC, SplitConfig.DEFAULT)
+            .client(SplitConfig.CLIENT_CODEC, SplitConfig.DEFAULT)
+            .networkSerializable(SplitConfig::streamCodec)
             .buildAndRegister();
 
     public static void init() {

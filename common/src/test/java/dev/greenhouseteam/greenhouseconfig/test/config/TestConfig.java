@@ -25,9 +25,9 @@ public record TestConfig(int silly, HolderSet<Block> redBlocks, HolderSet<Biome>
     public static final TestConfig DEFAULT = new TestConfig(69, LateHolderSet.createFromEntries(Registries.BLOCK, List.of(ResourceKey.create(Registries.BLOCK, ResourceLocation.withDefaultNamespace("netherrack")))), LateHolderSet.createMixed(Registries.BIOME, List.of(GREENS), List.of(Biomes.BAMBOO_JUNGLE)));
 
     public static final Codec<TestConfig> CODEC = RecordCodecBuilder.create(inst -> inst.group(
-            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.jsonCCodec(List.of("The value which makes this config very silly."), Codec.INT), "silly", DEFAULT.silly()).forGetter(TestConfig::silly),
-            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.jsonCCodec(List.of("One block, two block, red block, blue block."), GreenhouseConfigCodecs.lateHoldersCodec(Registries.BLOCK)), "red_blocks", DEFAULT.redBlocks()).forGetter(TestConfig::redBlocks),
-            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.jsonCCodec(List.of("Biomes that are green", "This is an extra line to show how green they really are!"), GreenhouseConfigCodecs.lateHoldersCodec(Registries.BIOME)), "green_biomes", DEFAULT.greenBiomes()).forGetter(TestConfig::greenBiomes)
+            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.commentedCodec(List.of("The value which makes this config very silly."), Codec.INT), "silly", DEFAULT.silly()).forGetter(TestConfig::silly),
+            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.commentedCodec(List.of("One block, two block, red block, blue block."), GreenhouseConfigCodecs.lateHoldersCodec(Registries.BLOCK)), "red_blocks", DEFAULT.redBlocks()).forGetter(TestConfig::redBlocks),
+            GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.commentedCodec(List.of("Biomes that are green", "This is an extra line to show how green they really are!"), GreenhouseConfigCodecs.lateHoldersCodec(Registries.BIOME)), "green_biomes", DEFAULT.greenBiomes()).forGetter(TestConfig::greenBiomes)
     ).apply(inst, TestConfig::new));
 
     public static final StreamCodec<RegistryFriendlyByteBuf, TestConfig> STREAM_CODEC = StreamCodec.composite(
@@ -39,4 +39,11 @@ public record TestConfig(int silly, HolderSet<Block> redBlocks, HolderSet<Biome>
             TestConfig::greenBiomes,
             TestConfig::new
     );
+
+    public static class CompatCodecs {
+        public static final Codec<TestConfig> V1 = RecordCodecBuilder.create(inst -> inst.group(
+                GreenhouseConfigCodecs.defaultFieldCodec(Codec.INT, "silly", DEFAULT.silly()).forGetter(TestConfig::silly),
+                GreenhouseConfigCodecs.defaultFieldCodec(GreenhouseConfigCodecs.lateHoldersCodec(Registries.BIOME), "green_biomes", DEFAULT.greenBiomes()).forGetter(TestConfig::greenBiomes)
+        ).apply(inst, (t1, t2) -> new TestConfig(t1, DEFAULT.redBlocks(), t2)));
+    }
 }

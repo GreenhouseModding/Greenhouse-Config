@@ -17,11 +17,7 @@ public class GreenhouseConfigFabric implements ModInitializer {
                 GreenhouseConfig.onServerStarting(server);
             }
         });
-        ServerLifecycleEvents.SERVER_STARTED.register(server -> {
-            if (server.isDedicatedServer()) {
-                GreenhouseConfig.onServerStarted(server);
-            }
-        });
+        ServerLifecycleEvents.SERVER_STARTED.register(GreenhouseConfig::onServerStarted);
     }
 
     public static boolean isDedicatedServerContext() {

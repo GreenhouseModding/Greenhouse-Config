@@ -37,6 +37,10 @@ public interface GHConfigIPlatformHelper {
      */
     ConfigSide getSide();
 
+    /**
+     * Gets the config path.
+     * @return The config path.
+     */
     Path getConfigPath();
 
     /**
@@ -49,7 +53,22 @@ public interface GHConfigIPlatformHelper {
         return isDevelopmentEnvironment() ? "development" : "production";
     }
 
+    /**
+     * Runs the loader specific post load event.
+     *
+     * @param holder The config holder
+     * @param config
+     * @param side
+     * @param <T>
+     */
     <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
 
+    /**
+     *
+     * @param holder
+     * @param config
+     * @param side
+     * @param <T>
+     */
     <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, ConfigSide side);
 }

@@ -1,20 +1,21 @@
-package dev.greenhouseteam.greenhouseconfig.impl.jsonc;
+package dev.greenhouseteam.greenhouseconfig.impl.codec;
 
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCOps;
 import dev.greenhouseteam.greenhouseconfig.mixin.DelegatingOpsAccessor;
 import net.minecraft.resources.DelegatingOps;
 
 import java.util.List;
 
-public class JsonCCodec<T> implements Codec<T> {
+public class CommentedCodec<T> implements Codec<T> {
     protected final List<String> comments;
     protected final Codec<T> baseCodec;
 
-    public JsonCCodec(List<String> comment, Codec<T> codec) {
+    public CommentedCodec(List<String> comment, Codec<T> codec) {
         this.comments = comment;
         this.baseCodec = codec;
     }

@@ -2,6 +2,7 @@ package dev.greenhouseteam.greenhouseconfig.api.util;
 
 import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.ListBuilder;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
@@ -22,6 +23,8 @@ import net.minecraft.tags.TagKey;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 public class LateHolderSet<T> extends HolderSet.ListBacked<T> {
     private final ResourceKey<Registry<T>> registry;
@@ -48,20 +51,20 @@ public class LateHolderSet<T> extends HolderSet.ListBacked<T> {
         this.keys = List.copyOf(keys);
     }
 
-    public static <T> void bind(HolderLookup.RegistryLookup<T> registry, HolderSet<T> holderSet) {
+    public static <T> void bind(HolderLookup.RegistryLookup<T> registry, HolderSet<T> holderSet, Consumer<String> onException) {
         if (!(holderSet instanceof LateHolderSet<T> late))
             return;
         ImmutableList.Builder<Holder<T>> builder = ImmutableList.builder();
         late.keys.forEach(key -> {
             key.ifLeft(tagKey -> {
                 if (registry.get(tagKey).isEmpty()) {
-                    GreenhouseConfig.LOG.error("Could not read tag " + tagKey.location() + " for registry " + tagKey.registry().location() + ". Please check if it is valid.");
+                    onException.accept("Could not get tag " + tagKey.location() + " from registry " + tagKey.registry().location() + ".");
                     return;
                 }
                 builder.addAll(registry.getOrThrow(tagKey).stream().toList());
             }).ifRight(resourceKey -> {
                 if (registry.get(resourceKey).isEmpty()) {
-                    GreenhouseConfig.LOG.error("Could not read resource " + resourceKey.location() + " for registry " + resourceKey.registry() + ". Please check if it is valid.");
+                    onException.accept("Could not get " + resourceKey.location() + " from registry " + resourceKey.registry() + ".");
                     return;
                 }
                 builder.add(registry.getOrThrow(resourceKey));
@@ -74,13 +77,20 @@ public class LateHolderSet<T> extends HolderSet.ListBacked<T> {
         return "LateHolderSet[" + this.keys + "]";
     }
 
-    public <T> T encode(DynamicOps<T> ops, T prefix) {
-        ListBuilder<T> builder = ops.listBuilder();
-        keys.forEach(key -> {
+    public <E> E encode(DynamicOps<E> ops, E prefix) {
+        if (keys.size() == 1) {
+            return ops.createString(keys.get(0).map(
+                    tagKey -> "#" + tagKey.location().toString(),
+                    resourceKey -> resourceKey.location().toString())
+            );
+        }
+
+        ListBuilder<E> builder = ops.listBuilder();
+        for (Either<TagKey<T>, ResourceKey<T>> key : keys) {
             key
                     .ifLeft(tagKey -> builder.add(ops.createString("#" + tagKey.location())))
                     .ifRight(resourceKey -> builder.add(ops.createString(resourceKey.location().toString())));
-        });
+        }
         return builder.build(prefix).getOrThrow();
     }
 

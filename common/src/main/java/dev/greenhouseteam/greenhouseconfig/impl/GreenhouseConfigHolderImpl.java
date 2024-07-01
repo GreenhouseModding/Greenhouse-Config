@@ -12,89 +12,85 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> {
 
-    private final String modId;
-    private final int configVersion;
+    private final String configName;
+    private final int schemaVersion;
     private final T defaultServerValue;
     private final T defaultClientValue;
     private final Codec<T> serverCodec;
     private final Codec<T> clientCodec;
-    private final StreamCodec<RegistryFriendlyByteBuf, T>  networkCodec;
-    private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer;
-    private final Map<Integer, Codec<T>> backwardsCompatCodecs;
+    private final Function<T, StreamCodec<RegistryFriendlyByteBuf, T>> networkCodec;
+    private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
+    private final Map<Integer, Codec<T>> backwardsCompatCodecsServer;
+    private final Map<Integer, Codec<T>> backwardsCompatCodecsClient;
 
-    public GreenhouseConfigHolderImpl(String modId, int configVersion,
+    public GreenhouseConfigHolderImpl(String configName, int schemaVersion,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
-                                      @Nullable StreamCodec<RegistryFriendlyByteBuf, T>  networkCodec,
-                                      @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationConsumer,
-                                      Map<Integer, Codec<T>> backwardsCompatCodecs) {
-        this.modId = modId;
-        this.configVersion = configVersion;
+                                      @Nullable Function<T, StreamCodec<RegistryFriendlyByteBuf, T>>  networkCodec,
+                                      @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback,
+                                      Map<Integer, Codec<T>> backwardsCompatCodecsServer,
+                                      Map<Integer, Codec<T>> backwardsCompatCodecsClient) {
+        this.configName = configName;
+        this.schemaVersion = schemaVersion;
         this.defaultServerValue = defaultServerValue;
         this.defaultClientValue = defaultClientValue;
         this.serverCodec = serverCodec;
         this.clientCodec = clientCodec;
         this.networkCodec = networkCodec;
-        this.postRegistryPopulationConsumer = postRegistryPopulationConsumer;
-        this.backwardsCompatCodecs = backwardsCompatCodecs;
-    }
-
-    public String getModId() {
-        return this.modId;
+        this.postRegistryPopulationCallback = postRegistryPopulationCallback;
+        this.backwardsCompatCodecsServer = backwardsCompatCodecsServer;
+        this.backwardsCompatCodecsClient = backwardsCompatCodecsClient;
     }
 
     @Override
-    public T getDefaultServerValue() {
-        return this.defaultServerValue;
+    public String getConfigName() {
+        return this.configName;
     }
 
     @Override
-    public T getDefaultClientValue() {
-        return this.defaultClientValue;
+    public T getDefaultValue() {
+        return GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? defaultServerValue : defaultClientValue;
     }
 
     public <E> E encode(DynamicOps<E> ops, T value) {
-        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? this.serverCodec : this.clientCodec;
-        return codec.encodeStart(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.modId + "'. " + s));
+        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? serverCodec : clientCodec;
+        return codec.encodeStart(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.configName + "'. " + s));
     }
 
     public <E> T decode(DynamicOps<E> ops, E value) {
-        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? this.serverCodec : this.clientCodec;
-        return codec.decode(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.modId + "'. Please check your config tile" + s)).getFirst();
+        Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? serverCodec : clientCodec;
+        return codec.decode(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + configName + "'. Please check your config tile" + s)).getFirst();
     }
 
-    public int getConfigVersion() {
-        return this.configVersion;
+    public int getSchemaVersion() {
+        return this.schemaVersion;
     }
 
     public void postRegistryPopulation(HolderLookup.Provider registries, T value) {
-        if (postRegistryPopulationConsumer == null)
+        if (postRegistryPopulationCallback == null)
             return;
-        postRegistryPopulationConsumer.accept(registries, value);
+        postRegistryPopulationCallback.accept(registries, value);
     }
 
-    public Codec<T> getServerCodec() {
-        return this.serverCodec;
-    }
-
-    public Codec<T> getClientCodec() {
-        return this.clientCodec;
-    }
-
-    public StreamCodec<RegistryFriendlyByteBuf, T> getNetworkCodec() {
-        return this.networkCodec;
+    @Nullable
+    public StreamCodec<RegistryFriendlyByteBuf, T> getNetworkCodec(T clientConfig) {
+        if (networkCodec == null)
+            return null;
+        return networkCodec.apply(clientConfig);
     }
 
     public Codec<T> getBackwardsCompatCodec(int configVersion) {
-        return backwardsCompatCodecs.get(configVersion);
+        return GreenhouseConfig.getPlatform().getSide() == ConfigSide.SERVER ? backwardsCompatCodecsServer.get(configVersion) : backwardsCompatCodecsClient.get(configVersion);
     }
 
     @Override
     public int hashCode() {
-        return modId.hashCode();
+        return configName.hashCode();
     }
 
     @Override
@@ -103,6 +99,6 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
             return false;
         }
 
-        return otherHolder.modId.equals(this.modId);
+        return otherHolder.configName.equals(this.configName);
     }
 }

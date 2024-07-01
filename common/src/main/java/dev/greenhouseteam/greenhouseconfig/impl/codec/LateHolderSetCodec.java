@@ -23,19 +23,25 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
 
     @Override
     public <T> DataResult<Pair<HolderSet<E>, T>> decode(DynamicOps<T> ops, T value) {
-        if (ops.getStream(value).isSuccess() && ops.getStream(value).getOrThrow().anyMatch(t -> ops.getStringValue(t).isSuccess() && ops.getStringValue(t).getOrThrow().startsWith("#"))) {
-            ImmutableList.Builder<TagKey<E>> tags = ImmutableList.builder();
-            ImmutableList.Builder<ResourceKey<E>> entries = ImmutableList.builder();
-            ops.getStream(value).getOrThrow().forEach(t -> {
+        ImmutableList.Builder<TagKey<E>> tags = ImmutableList.builder();
+        ImmutableList.Builder<ResourceKey<E>> entries = ImmutableList.builder();
+        if (ops.getStream(value).isSuccess()) {
+            ops.getStream(value).getOrThrow().filter(t -> ops.getStringValue(t).isSuccess()).forEach(t -> {
                 String string = ops.getStringValue(t).getOrThrow();
                 if (string.startsWith("#"))
                     tags.add(TagKey.create(registryKey, ResourceLocation.parse(string.substring(1))));
                 else
                     entries.add(ResourceKey.create(registryKey, ResourceLocation.parse(string)));
             });
-            return DataResult.success(Pair.of(LateHolderSet.createMixed((ResourceKey<Registry<E>>) registryKey, tags.build(), entries.build()), value));
+        } else if (ops.getStringValue(value).isSuccess()) {
+            var str = ops.getStringValue(value).getOrThrow();
+            String string = ops.getStringValue(value).getOrThrow();
+            if (string.startsWith("#"))
+                tags.add(TagKey.create(registryKey, ResourceLocation.parse(string.substring(1))));
+            else
+                entries.add(ResourceKey.create(registryKey, ResourceLocation.parse(string)));
         }
-        return super.decode(ops, value);
+        return DataResult.success(Pair.of(LateHolderSet.createMixed((ResourceKey<Registry<E>>) registryKey, tags.build(), entries.build()), value));
     }
 
     @Override

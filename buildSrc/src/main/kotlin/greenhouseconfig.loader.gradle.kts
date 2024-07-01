@@ -1,6 +1,4 @@
 import dev.greenhouseteam.greenhouseconfig.gradle.Properties
-import gradle.kotlin.dsl.accessors._8347e3f88f0262002bff02c22a2fad22.sourceSets
-import gradle.kotlin.dsl.accessors._8347e3f88f0262002bff02c22a2fad22.testCompileOnly
 
 plugins {
     id("greenhouseconfig.common")
@@ -29,7 +27,6 @@ dependencies {
     }
     testCompileOnly(project(":common", "commonJava"))
     testCompileOnly(project(":common", "commonTestJava"))
-    testCompileOnly(project.sourceSets["main"].output)
     "commonJava"(project(":common", "commonJava"))
     "commonTestJava"(project(":common", "commonTestJava"))
     "commonResources"(project(":common", "commonResources"))

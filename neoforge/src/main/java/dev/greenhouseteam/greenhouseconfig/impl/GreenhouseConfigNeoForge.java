@@ -31,10 +31,7 @@ public class GreenhouseConfigNeoForge {
         }
         @SubscribeEvent
         public static void onServerStarted(ServerStartedEvent event) {
-            if (event.getServer().isDedicatedServer()) {
-                dedicatedServerContext = true;
-                GreenhouseConfig.onServerStarted(event.getServer());
-            }
+            GreenhouseConfig.onServerStarted(event.getServer());
         }
     }
 }

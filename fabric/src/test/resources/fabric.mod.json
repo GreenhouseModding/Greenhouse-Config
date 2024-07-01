@@ -21,9 +21,6 @@
     "entrypoints": {
         "main": [
           "dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTestFabric"
-        ],
-        "client": [
-            "dev.greenhouseteam.greenhouseconfig.test.client.GreenhouseConfigTestFabricClient"
         ]
     },
     "depends": {

@@ -36,6 +36,7 @@ repositories {
 
 dependencies {
     implementation("org.jetbrains:annotations:24.1.0")
+    testCompileOnly(project.sourceSets["main"].output)
 }
 
 // Declare capabilities on the outgoing configurations.

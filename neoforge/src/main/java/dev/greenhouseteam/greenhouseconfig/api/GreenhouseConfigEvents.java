@@ -17,8 +17,8 @@ public class GreenhouseConfigEvents {
             this.side = side;
         }
 
-        public String getModId() {
-            return holder.getModId();
+        public String getConfigName() {
+            return holder.getConfigName();
         }
 
         public GreenhouseConfigHolder<T> getHolder() {
@@ -35,7 +35,7 @@ public class GreenhouseConfigEvents {
 
         @ApiStatus.Internal
         public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
-            PostLoad<T> event = new PostLoad<>(modId, config, side);
+            PostLoad<T> event = new PostLoad<T>(modId, config, side);
             ModLoader.postEvent(event);
         }
     }
@@ -51,8 +51,8 @@ public class GreenhouseConfigEvents {
             this.side = side;
         }
 
-        public String getModId() {
-            return holder.getModId();
+        public String getConfigName() {
+            return holder.getConfigName();
         }
 
         public GreenhouseConfigHolder<T> getHolder() {
@@ -69,7 +69,7 @@ public class GreenhouseConfigEvents {
 
         @ApiStatus.Internal
         public static <T> void post(GreenhouseConfigHolder<T> modId, T config, ConfigSide side) {
-            PostLoad<T> event = new PostLoad<>(modId, config, side);
+            PostLoad<T> event = new PostLoad<T>(modId, config, side);
             ModLoader.postEvent(event);
         }
     }

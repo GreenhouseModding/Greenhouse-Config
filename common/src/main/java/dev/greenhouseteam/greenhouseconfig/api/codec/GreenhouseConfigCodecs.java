@@ -1,11 +1,13 @@
 package dev.greenhouseteam.greenhouseconfig.api.codec;
 
+import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.LateHolderSetCodec;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCCodec;
+import dev.greenhouseteam.greenhouseconfig.impl.codec.CommentedCodec;
 import io.netty.buffer.ByteBuf;
+import net.minecraft.core.Holder;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.network.RegistryFriendlyByteBuf;
@@ -22,13 +24,13 @@ import java.util.Optional;
 public class GreenhouseConfigCodecs {
     public static <A> MapCodec<A> defaultFieldCodec(final Codec<A> codec, final String name, final A defaultValue) {
         return codec.optionalFieldOf(name).xmap(
-                o -> o.orElse(defaultValue),
+                Optional::orElseThrow,
                 Optional::of
         );
     }
 
-    public static <A> Codec<A> jsonCCodec(List<String> comments, Codec<A> codec) {
-        return new JsonCCodec<>(comments, codec);
+    public static <A> Codec<A> commentedCodec(List<String> comments, Codec<A> codec) {
+        return new CommentedCodec<>(comments, codec);
     }
 
     public static <E> LateHolderSetCodec<E> lateHoldersCodec(ResourceKey<? extends Registry<E>> registry) {
@@ -36,23 +38,22 @@ public class GreenhouseConfigCodecs {
     }
 
     public static <T> StreamCodec<RegistryFriendlyByteBuf, HolderSet<T>> lateHoldersStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
-        return new StreamCodec<RegistryFriendlyByteBuf, HolderSet<T>>() {
+        return new StreamCodec<>() {
             private static final int NAMED_SET = -1;
             private final StreamCodec<ByteBuf, ResourceKey<T>> holderCodec = ResourceKey.streamCodec(registryKey);
 
             public HolderSet<T> decode(RegistryFriendlyByteBuf buf) {
                 int i = VarInt.read(buf) - 1;
                 if (i == -1) {
-                    Registry<T> registry = buf.registryAccess().registryOrThrow(registryKey);
-                    return LateHolderSet.createFromTags((ResourceKey<Registry<T>>) registryKey, List.of(TagKey.create(registryKey, (ResourceLocation)ResourceLocation.STREAM_CODEC.decode(buf))));
+                    return LateHolderSet.createFromTags((ResourceKey<Registry<T>>) registryKey, List.of(TagKey.create(registryKey, ResourceLocation.STREAM_CODEC.decode(buf))));
                 } else {
-                    var tags = new ArrayList(Math.min(i, 65536));
-                    var entries = new ArrayList(Math.min(i, 65536));
+                    List<TagKey<T>> tags = new ArrayList<>(Math.min(i, 65536));
+                    List<ResourceKey<T>> entries = new ArrayList<>(Math.min(i, 65536));
 
                     for (int j = 0; j < i; ++j) {
                         boolean isTag = buf.readBoolean();
                         if (isTag)
-                            tags.add(TagKey.create(registryKey, (ResourceLocation) ResourceLocation.STREAM_CODEC.decode(buf)));
+                            tags.add(TagKey.create(registryKey, ResourceLocation.STREAM_CODEC.decode(buf)));
                         else
                             entries.add(holderCodec.decode(buf));
                     }
@@ -69,10 +70,8 @@ public class GreenhouseConfigCodecs {
                 } else {
                     VarInt.write(buf, holderSet.size() + 1);
                     if (holderSet instanceof LateHolderSet<T> late) {
-                        var it = late.keys().iterator();
 
-                        while (it.hasNext()) {
-                            var value = it.next();
+                        for (Either<TagKey<T>, ResourceKey<T>> value : late.keys()) {
                             if (value.left().isPresent()) {
                                 buf.writeBoolean(true);
                                 ResourceLocation.STREAM_CODEC.encode(buf, value.left().orElseThrow().location());
@@ -82,10 +81,7 @@ public class GreenhouseConfigCodecs {
                             }
                         }
                     } else {
-                        var it = holderSet.iterator();
-
-                        while (it.hasNext()) {
-                            var value = it.next();
+                        for (Holder<T> value : holderSet) {
                             buf.writeBoolean(false);
                             holderCodec.encode(buf, value.unwrapKey().orElseThrow());
                         }
