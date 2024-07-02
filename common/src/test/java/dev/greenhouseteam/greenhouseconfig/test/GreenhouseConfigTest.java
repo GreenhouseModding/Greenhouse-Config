@@ -64,7 +64,7 @@ public class GreenhouseConfigTest {
 
     public static void registerServerReloadCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralCommandNode<CommandSourceStack> ghTestNode = Commands
-                .literal("greenhouse_test")
+                .literal("greenhousetest")
                 .build();
 
         LiteralCommandNode<CommandSourceStack> reloadNode = Commands
@@ -83,7 +83,7 @@ public class GreenhouseConfigTest {
 
         LiteralCommandNode<CommandSourceStack> reloadServerNode = Commands
                 .literal("server")
-                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfig(context, SPLIT))
+                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfig(context, SERVER))
                 .build();
 
         reloadNode.addChild(reloadMainNode);

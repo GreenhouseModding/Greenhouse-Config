@@ -9,7 +9,7 @@ import dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTest;
 public class GreenhouseConfigTestClient {
     public static void registerClientReloadCommands(CommandDispatcher<Object> dispatcher) {
         LiteralCommandNode<Object> ghTestNode = LiteralArgumentBuilder
-                .literal("greenhouse_test_client")
+                .literal("greenhousetestclient")
                 .build();
 
         LiteralCommandNode<Object> reloadNode = LiteralArgumentBuilder
