@@ -10,7 +10,7 @@ public class GreenhouseConfigTestFabric implements ModInitializer {
     public void onInitialize() {
         GreenhouseConfigTest.init();
         CommandRegistrationCallback.EVENT.register((dispatcher, registryAccess, environment) ->
-                GreenhouseConfigTest.registerServerReloadCommands(dispatcher)
+                GreenhouseConfigTest.registerServerCommands(dispatcher)
         );
         GreenhouseConfigEvents.POST_POPULATION.register(GreenhouseConfigTest::logTestConfigs);
     }

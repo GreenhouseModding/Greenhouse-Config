@@ -8,7 +8,7 @@ import dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTest;
 import dev.greenhouseteam.greenhouseconfig.test.command.TestCommand;
 
 public class GreenhouseConfigTestClient {
-    public static void registerClientReloadCommands(CommandDispatcher<Object> dispatcher) {
+    public static void registerClientCommands(CommandDispatcher<?> dispatcher) {
         LiteralCommandNode<Object> ghTestNode = LiteralArgumentBuilder
                 .literal("greenhousetestclient")
                 .build();
@@ -50,6 +50,6 @@ public class GreenhouseConfigTestClient {
         ghTestNode.addChild(reloadNode);
         ghTestNode.addChild(colorNode);
 
-        dispatcher.getRoot().addChild(ghTestNode);
+        ((CommandDispatcher)dispatcher).getRoot().addChild(ghTestNode);
     }
 }

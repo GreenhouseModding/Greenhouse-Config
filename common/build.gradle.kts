@@ -6,6 +6,8 @@ plugins {
     id("net.neoforged.moddev")
 }
 
+base.archivesName.set(Properties.MOD_ID + "-" + project.name + "-mojmap")
+
 sourceSets {
     create("generated") {
         resources {

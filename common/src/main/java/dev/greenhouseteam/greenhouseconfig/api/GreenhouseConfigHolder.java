@@ -1,7 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.api;
 
 import com.google.common.collect.ImmutableMap;
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.serialization.Codec;
 
 import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
@@ -10,7 +9,6 @@ import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
-import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;

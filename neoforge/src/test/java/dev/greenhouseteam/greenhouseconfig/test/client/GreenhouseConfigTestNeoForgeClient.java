@@ -1,6 +1,5 @@
 package dev.greenhouseteam.greenhouseconfig.test.client;
 
-import com.mojang.brigadier.CommandDispatcher;
 import dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTest;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -12,7 +11,7 @@ public class GreenhouseConfigTestNeoForgeClient {
     public static class GameEvents {
         @SubscribeEvent
         public static void registerClientCommands(RegisterClientCommandsEvent event) {
-            GreenhouseConfigTestClient.registerClientReloadCommands((CommandDispatcher)event.getDispatcher());
+            GreenhouseConfigTestClient.registerClientCommands(event.getDispatcher());
         }
     }
 }

@@ -20,7 +20,7 @@ public class GreenhouseConfigReloadCommandMethods {
      *
      * @param context   The {@link CommandContext} used for this command.
      * @param holder    The config holder.
-     * @return          1 if a  success, 0 if unsuccessful.
+     * @return          1 if a success, 0 if unsuccessful.
      */
     public static int reloadGreenhouseConfig(CommandContext<CommandSourceStack> context, GreenhouseConfigHolder<?> holder) {
         var config = holder.reloadConfig(s ->
