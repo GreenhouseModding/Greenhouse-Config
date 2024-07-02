@@ -6,7 +6,6 @@ import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.ListBuilder;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
-import dev.greenhouseteam.greenhouseconfig.mixin.HolderSetNamedAccessor;
 import io.netty.buffer.ByteBuf;
 import net.minecraft.core.Holder;
 import net.minecraft.core.HolderLookup;
