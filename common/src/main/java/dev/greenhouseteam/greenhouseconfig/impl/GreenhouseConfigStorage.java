@@ -172,7 +172,8 @@ public class GreenhouseConfigStorage {
             }
 
             File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
-            Files.createFile(file.toPath());
+            if (!file.exists())
+                Files.createFile(file.toPath());
             createConfig(holder, config, file);
         } catch (IOException ex) {
             GreenhouseConfig.LOG.error("Failed to create config for mod '{}' to config directory. Skipping and using default config values.", holder.getConfigName(), ex);
