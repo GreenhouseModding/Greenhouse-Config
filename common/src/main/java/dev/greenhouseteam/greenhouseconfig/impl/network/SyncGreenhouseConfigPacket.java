@@ -21,7 +21,7 @@ public record SyncGreenhouseConfigPacket(String configName, @Nullable Object con
         String configName = buf.readUtf();
         if (!GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.containsKey(configName))
             return new SyncGreenhouseConfigPacket(configName, null);
-        GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.get(configName);
+        var holder = GreenhouseConfigHolderImpl.cast(GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.get(configName));
         var streamCodec = holder.getNetworkCodec(holder.get());
         if (streamCodec == null)
             return new SyncGreenhouseConfigPacket(configName, null);
@@ -31,7 +31,7 @@ public record SyncGreenhouseConfigPacket(String configName, @Nullable Object con
 
     public static void write(FriendlyByteBuf buf, SyncGreenhouseConfigPacket packet) {
         buf.writeUtf(packet.configName);
-        GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.get(packet.configName);
+        var holder = GreenhouseConfigHolderImpl.cast(GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.get(packet.configName));
         if (packet.config == null)
             throw new IllegalArgumentException("Could not sync non existent config with id '" + packet.configName + "',");
         var streamCodec = holder.getNetworkCodec(holder.get());

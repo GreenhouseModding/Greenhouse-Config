@@ -3,12 +3,12 @@ package dev.greenhouseteam.greenhouseconfig.impl;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DynamicOps;
 import com.mojang.serialization.JsonOps;
-import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.CommentedJson;
+
+import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
-import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCOps;
-import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCWriter;
 import dev.greenhouseteam.greenhouseconfig.impl.network.SyncGreenhouseConfigPacket;
 import net.minecraft.core.HolderLookup;
 
@@ -33,7 +33,7 @@ public class GreenhouseConfigStorage {
     private static final Map<GreenhouseConfigHolder<?>, Object> SERVER_CONFIGS = new HashMap<>();
     private static final Map<GreenhouseConfigHolder<?>, Object> CLIENT_CONFIGS = new HashMap<>();
 
-    public static <T> T getConfig(GreenhouseConfigHolderImpl<T> holder) {
+    public static <C, T> T getConfig(GreenhouseConfigHolderImpl<C, T> holder) {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER;
         if (isServer && !SERVER_CONFIGS.containsKey(holder) || !isServer && !CLIENT_CONFIGS.containsKey(holder)) {
             throw new UnsupportedOperationException("Could not find config '" + holder.getConfigName() + "'.");
@@ -61,18 +61,19 @@ public class GreenhouseConfigStorage {
         ImmutableList.Builder<SyncGreenhouseConfigPacket> list = ImmutableList.builder();
         var map = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? SERVER_CONFIGS : CLIENT_CONFIGS;
         for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : map.entrySet()) {
-            var networkCodec = ((GreenhouseConfigHolderImpl<Object>)entry.getKey()).getNetworkCodec(entry.getKey().get());
+            var networkCodec = GreenhouseConfigHolderImpl.cast(entry.getKey()).getNetworkCodec(entry.getKey().get());
             if (networkCodec != null)
                 list.add(new SyncGreenhouseConfigPacket(entry.getKey().getConfigName(), entry.getValue()));
         }
         return list.build();
     }
 
-    public static <T> T reloadConfig(GreenhouseConfigHolderImpl<T> holder, Consumer<String> onError) {
+    public static <C, T> T reloadConfig(GreenhouseConfigHolderImpl<C, T> holder, Consumer<String> onError) {
         File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
         try {
-            var json = JsonParser.parseReader(new FileReader(file));
-            var value = holder.decode(JsonOps.INSTANCE, json);
+            var lang = holder.getConfigLang();
+            var json = lang.read(new FileReader(file));
+            var value = holder.decode(json);
             if (value.isError()) {
                 onError.accept(value.error().orElseThrow().message());
                 return null;
@@ -94,7 +95,7 @@ public class GreenhouseConfigStorage {
 
     public static void generateServerConfigs() {
         for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.SERVER_CONFIG_HOLDERS.values()) {
-            GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
+            var holder = GreenhouseConfigHolderImpl.cast(config);
             loadConfig(holder, SERVER_CONFIGS::put);
             GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), GreenhouseConfigSide.DEDICATED_SERVER);
         }
@@ -102,7 +103,7 @@ public class GreenhouseConfigStorage {
 
     public static void generateClientConfigs() {
         for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values()) {
-            GreenhouseConfigHolderImpl<Object> holder = (GreenhouseConfigHolderImpl<Object>) config;
+            var holder = GreenhouseConfigHolderImpl.cast(config);
             loadConfig(holder, CLIENT_CONFIGS::put);
             GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), GreenhouseConfigSide.CLIENT);
         }
@@ -112,7 +113,7 @@ public class GreenhouseConfigStorage {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER;
         Map<GreenhouseConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
         for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet()) {
-            ((GreenhouseConfigHolderImpl<Object>)entry.getKey()).postRegistryPopulation(registries, entry.getValue());
+            GreenhouseConfigHolderImpl.cast(entry.getKey()).postRegistryPopulation(registries, entry.getValue());
             GreenhouseConfig.getPlatform().postPopulationEvent((GreenhouseConfigHolder<Object>) entry.getKey(), entry.getValue(), GreenhouseConfig.getPlatform().getSide());
         }
     }
@@ -122,21 +123,22 @@ public class GreenhouseConfigStorage {
     }
 
     public static void individualRegistryPopulation(HolderLookup.Provider registries, GreenhouseConfigHolder<?> holder, Object value) {
-        ((GreenhouseConfigHolderImpl<Object>)holder).postRegistryPopulation(registries, value);
+        GreenhouseConfigHolderImpl.cast(holder).postRegistryPopulation(registries, value);
         GreenhouseConfig.getPlatform().postPopulationEvent((GreenhouseConfigHolder<Object>) holder, value, GreenhouseConfig.getPlatform().getSide());
     }
 
-    private static <T> void loadConfig(GreenhouseConfigHolderImpl<T> holder, BiConsumer<GreenhouseConfigHolder<?>, Object> consumer) {
+    private static <C, T> void loadConfig(GreenhouseConfigHolderImpl<C, T> holder, BiConsumer<GreenhouseConfigHolder<?>, Object> consumer) {
         File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
 
         if (file.exists()) {
             try {
-                var json = JsonParser.parseReader(new FileReader(file));
+                ConfigLang<C> lang = holder.getConfigLang();
+                C json = lang.read(new FileReader(file));
                 int schemaVersion = readSchemaVersion(file);
                 if (schemaVersion != holder.getSchemaVersion()) {
                     Codec<T> oldCodec = holder.getBackwardsCompatCodec(schemaVersion);
                     if (oldCodec != null) {
-                        var dataResult = oldCodec.decode(JsonOps.INSTANCE, json);
+                        var dataResult = oldCodec.decode(lang.getOps(), json);
                         if (!dataResult.hasResultOrPartial()) {
                             GreenhouseConfig.LOG.error("Could not decode old config file '{}'. Using default instead.", file.getPath());
                         } else {
@@ -146,7 +148,7 @@ public class GreenhouseConfigStorage {
                         }
                     }
                 } else {
-                    var value = holder.decode(JsonOps.INSTANCE, json);
+                    var value = holder.decode(json);
                     if (value.isError() && value.hasResultOrPartial())
                         createConfig(holder, value.getPartialOrThrow().getFirst(), file);
                     consumer.accept(holder, value.getPartialOrThrow().getFirst());
@@ -162,6 +164,10 @@ public class GreenhouseConfigStorage {
     }
 
     public static <T> void createConfig(GreenhouseConfigHolder<T> holder, T config) {
+        createConfig((GreenhouseConfigHolderImpl<?, T>) holder, config);
+    }
+    
+    private static <C, T> void createConfig(GreenhouseConfigHolderImpl<C, T> holder, T config) {
         try {
             int folderCount = holder.getConfigName().split("/").length;
 
@@ -180,18 +186,17 @@ public class GreenhouseConfigStorage {
         }
     }
 
-    private static <T> T createConfig(GreenhouseConfigHolder<T> holder, T config, File file) throws IOException {
-        CommentedJson element = ((GreenhouseConfigHolderImpl<T>)holder).encode(JsonCOps.INSTANCE, config);
+    private static <C, T> T createConfig(GreenhouseConfigHolderImpl<C, T> holder, T config, File file) throws IOException {
+        DynamicOps<C> ops = holder.getConfigLang().getOps();
+        C element = holder.encode(config);
 
-        if (!(element instanceof CommentedJson.Object)) {
-            CommentedJson.Object object = new CommentedJson.Object();
-            object.put("value", element);
+        if (ops.getMap(element).isError()) {
+            C object = ops.createMap(Map.of(ops.createString("value"), element));
             element = object;
         }
 
         FileWriter writer = new FileWriter(file);
-        JsonCWriter jsonWriter = new JsonCWriter(writer);
-        jsonWriter.writeJson(element);
+        holder.getConfigLang().write(writer, element);
         writer.close();
         writeSchemaVersion(file, holder);
 
