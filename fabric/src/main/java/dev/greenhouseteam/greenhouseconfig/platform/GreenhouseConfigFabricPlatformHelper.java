@@ -59,14 +59,14 @@ public class GreenhouseConfigFabricPlatformHelper implements GHConfigIPlatformHe
 
     @Override
     public <T> void syncConfig(GreenhouseConfigHolder<T> holder, MinecraftServer server, ServerPlayer player) {
-        if (!ServerPlayNetworking.canSend(player, SyncGreenhouseConfigPacket.TYPE) || server.isSingleplayerOwner(player.getGameProfile()))
+        if (!holder.isNetworkSyncable() || !ServerPlayNetworking.canSend(player, SyncGreenhouseConfigPacket.TYPE) || server.isSingleplayerOwner(player.getGameProfile()))
             return;
         ServerPlayNetworking.send(player, new SyncGreenhouseConfigPacket(holder.getConfigName(), holder.get()));
     }
 
     @Override
     public <T> boolean queryConfig(GreenhouseConfigHolder<T> holder) {
-        if (!ClientPlayNetworking.canSend(QuerySyncGreenhouseConfigPacket.TYPE) || Minecraft.getInstance().isLocalServer())
+        if (!holder.isNetworkSyncable() || !ClientPlayNetworking.canSend(QuerySyncGreenhouseConfigPacket.TYPE) || Minecraft.getInstance().hasSingleplayerServer())
             return false;
         ClientPlayNetworking.send(new QuerySyncGreenhouseConfigPacket(holder));
         return true;
@@ -74,11 +74,11 @@ public class GreenhouseConfigFabricPlatformHelper implements GHConfigIPlatformHe
 
     @Override
     public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
-        GreenhouseConfigEvents.POST_LOAD.invoker().onConfigLoad((GreenhouseConfigHolder<Object>) holder, config, side);
+        GreenhouseConfigEvents.POST_LOAD.invoker().onConfigLoad(holder, config, side);
     }
 
     @Override
     public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
-        GreenhouseConfigEvents.POST_POPULATION.invoker().onConfigLoad((GreenhouseConfigHolder<Object>) holder, config, side);
+        GreenhouseConfigEvents.POST_POPULATION.invoker().onConfigLoad(holder, config, side);
     }
 }

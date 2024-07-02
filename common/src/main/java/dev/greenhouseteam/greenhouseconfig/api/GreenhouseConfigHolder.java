@@ -36,6 +36,12 @@ public interface GreenhouseConfigHolder<T> {
     String getConfigName();
 
     /**
+     * Whether this config is network sync-able.
+     * @return True if the config is network sync-able, false if not.
+     */
+    boolean isNetworkSyncable();
+
+    /**
      * Gets the config of this holder.
      * @return  Returns the config.
      */
@@ -59,6 +65,16 @@ public interface GreenhouseConfigHolder<T> {
     @Nullable
     default T reloadConfig(Consumer<String> onError) {
         return GreenhouseConfigStorage.reloadConfig((GreenhouseConfigHolderImpl<T>) this, onError);
+    }
+
+    /**
+     * Queries a dedicated server and syncs its config values to the current client.
+     * This will return false if the config shouldn't be synced.
+     *
+     * @return  True if successful, false
+     */
+    default boolean queryConfig() {
+        return GreenhouseConfig.getPlatform().queryConfig(this);
     }
 
     /**

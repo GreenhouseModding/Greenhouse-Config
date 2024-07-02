@@ -57,14 +57,14 @@ public class GreenhouseConfigNeoForgePlatformHelper implements GHConfigIPlatform
 
     @Override
     public <T> void syncConfig(GreenhouseConfigHolder<T> holder, MinecraftServer server, ServerPlayer player) {
-        if (!player.connection.hasChannel(SyncGreenhouseConfigPacket.TYPE) || server.isSingleplayerOwner(player.getGameProfile()))
+        if (!holder.isNetworkSyncable() || !player.connection.hasChannel(SyncGreenhouseConfigPacket.TYPE) || server.isSingleplayerOwner(player.getGameProfile()))
             return;
         PacketDistributor.sendToPlayer(player, new SyncGreenhouseConfigPacket(holder.getConfigName(), holder.get()));
     }
 
     @Override
     public <T> boolean queryConfig(GreenhouseConfigHolder<T> holder) {
-        if (!Minecraft.getInstance().getConnection().hasChannel(SyncGreenhouseConfigPacket.TYPE) || Minecraft.getInstance().isLocalServer())
+        if (!holder.isNetworkSyncable() || !Minecraft.getInstance().getConnection().hasChannel(SyncGreenhouseConfigPacket.TYPE) || Minecraft.getInstance().hasSingleplayerServer())
             return false;
         PacketDistributor.sendToServer(new QuerySyncGreenhouseConfigPacket(holder));
         return true;

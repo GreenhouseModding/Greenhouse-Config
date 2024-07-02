@@ -3,7 +3,6 @@ package dev.greenhouseteam.greenhouseconfig.api.command;
 import com.mojang.brigadier.context.CommandContext;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
-import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderImpl;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import net.minecraft.client.Minecraft;
 import net.minecraft.commands.CommandSourceStack;
@@ -25,16 +24,16 @@ public class GreenhouseConfigReloadCommandMethods {
      */
     public static int reloadGreenhouseConfig(CommandContext<CommandSourceStack> context, GreenhouseConfigHolder<?> holder) {
         var config = holder.reloadConfig(s ->
-                context.getSource().sendFailure(Component.translatableWithFallback("command.greenhouseconfig.reload.error", "Failed to reload config 'config/" + holder.getConfigName() + ".jsonc'.", holder.getConfigName(), "jsonc").withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(s)))))
+                context.getSource().sendFailure(Component.translatableWithFallback("command.greenhouseconfig.reload.error", "Error whilst reloading config 'config/" + holder.getConfigName() + ".jsonc'.", holder.getConfigName(), "jsonc").withStyle(Style.EMPTY.withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, Component.literal(s)))))
         );
         if (config == null)
             return 0;
 
         GreenhouseConfigStorage.individualRegistryPopulation(context.getSource().registryAccess(), holder, config);
-        if (((GreenhouseConfigHolderImpl<Object>)holder).getNetworkCodec(holder.get()) != null)
+        if (holder.isNetworkSyncable())
             holder.syncConfig(context.getSource().getServer());
 
-        context.getSource().sendSuccess(() -> Component.translatableWithFallback("command.greenhouseconfig.reload.success", "Successfully reloading config 'config/" + holder.getConfigName() + ".jsonc'.", holder.getConfigName(), "jsonc"), true);
+        context.getSource().sendSuccess(() -> Component.translatableWithFallback("command.greenhouseconfig.reload.success", "Successfully reloaded config 'config/" + holder.getConfigName() + ".jsonc'.", holder.getConfigName(), "jsonc"), true);
         return 1;
     }
 
@@ -52,7 +51,7 @@ public class GreenhouseConfigReloadCommandMethods {
         if (config == null)
             return 0;
 
-        if (!GreenhouseConfig.getPlatform().queryConfig(holder))
+        if (!holder.queryConfig())
             GreenhouseConfigStorage.individualRegistryPopulation(Minecraft.getInstance().level.registryAccess(), holder, config);
         GreenhouseConfig.getPlatform().sendSuccessClient(context, Component.translatableWithFallback("command.greenhouseconfig.reload.success", "Successfully reloading config 'config/" + holder.getConfigName() + ".jsonc'.", holder.getConfigName(), "jsonc"));
         return 1;

@@ -77,8 +77,10 @@ public class GreenhouseConfigStorage {
                 onError.accept(value.error().orElseThrow().message());
                 return null;
             }
-            if (value.isError() && value.hasResultOrPartial())
+            if (value.isError() && value.hasResultOrPartial()) {
                 createConfig(holder, value.getPartialOrThrow().getFirst(), file);
+                onError.accept(value.error().orElseThrow().message());
+            }
             if (GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER)
                 SERVER_CONFIGS.put(holder, value.getPartialOrThrow().getFirst());
             else

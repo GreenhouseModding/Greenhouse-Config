@@ -1,11 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.test;
 
-import com.mojang.brigadier.CommandDispatcher;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigEvents;
-import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
-import dev.greenhouseteam.greenhouseconfig.test.client.GreenhouseConfigTestClient;
-import dev.greenhouseteam.greenhouseconfig.test.config.SplitConfig;
-import dev.greenhouseteam.greenhouseconfig.test.config.TestConfig;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -22,15 +17,7 @@ public class GreenhouseConfigTestNeoForge {
     private static class ModEvents {
         @SubscribeEvent
         public static void onPostPopulation(GreenhouseConfigEvents.PostPopulation<?> event) {
-            if (event.getConfigName().equals(GreenhouseConfigTest.MOD_ID + "_main") && event.getConfig() instanceof TestConfig testConfig) {
-                GreenhouseConfigTest.LOG.info(testConfig.redBlocks().toString());
-                GreenhouseConfigTest.LOG.info(testConfig.greenBiomes().toString());
-            }
-            if (event.getConfigName().equals(GreenhouseConfigTest.MOD_ID + "_split") && event.getConfig() instanceof SplitConfig splitConfig) {
-                GreenhouseConfigTest.LOG.info(splitConfig.color().serialize());
-                if (event.getSide() == GreenhouseConfigSide.CLIENT)
-                    GreenhouseConfigTest.LOG.info(splitConfig.clientValues().color().serialize());
-            }
+            GreenhouseConfigTest.logTestConfigs(event.getHolder(), event.getConfig(), event.getSide());
         }
     }
 

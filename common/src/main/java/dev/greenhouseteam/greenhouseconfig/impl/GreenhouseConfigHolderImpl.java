@@ -61,6 +61,11 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     }
 
     @Override
+    public boolean isNetworkSyncable() {
+        return networkCodecFunction != null;
+    }
+
+    @Override
     public T getDefaultValue() {
         return GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? defaultServerValue : defaultClientValue;
     }
