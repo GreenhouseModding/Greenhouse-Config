@@ -35,7 +35,12 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
     }
 
     @Override
-    public CommentedJson.Object empty() {
+    public CommentedJson empty() {
+        return CommentedJson.EMPTY;
+    }
+
+    @Override
+    public CommentedJson.Object emptyMap() {
         return CommentedJson.Object.EMPTY;
     }
 

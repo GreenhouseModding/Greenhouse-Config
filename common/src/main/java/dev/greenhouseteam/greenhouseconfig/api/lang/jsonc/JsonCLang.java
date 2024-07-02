@@ -32,6 +32,10 @@ public final class JsonCLang implements ConfigLang<CommentedJson> {
     @Override
     public CommentedJson read(Reader reader) throws IOException {
         JsonElement json = JsonParser.parseReader(reader);
-        return new CommentedJson(json);
+        if (json.isJsonObject()) {
+            return new CommentedJson.Object(json.getAsJsonObject());
+        } else {
+            return new CommentedJson(json);
+        }
     }
 }

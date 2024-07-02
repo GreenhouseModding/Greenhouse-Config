@@ -3,6 +3,7 @@ package dev.greenhouseteam.greenhouseconfig.api.lang.jsonc;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonNull;
+import com.google.gson.JsonObject;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -55,6 +56,18 @@ public class CommentedJson implements CommentedValue {
 
         public Object(String... comments) {
             super(null, comments);
+        }
+
+        public Object(JsonObject object) {
+            super(object);
+
+            for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+                if (entry.getValue().isJsonObject()) {
+                    map.put(entry.getKey(), new CommentedJson.Object(entry.getValue().getAsJsonObject()));
+                } else {
+                    map.put(entry.getKey(), new CommentedJson(entry.getValue()));
+                }
+            }
         }
 
         public Map<String, CommentedJson> getMap() {
