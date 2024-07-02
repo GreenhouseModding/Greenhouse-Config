@@ -7,7 +7,9 @@ import com.google.gson.JsonNull;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-public class CommentedJson {
+import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
+
+public class CommentedJson implements CommentedValue {
     private final JsonElement json;
     private final String[] comments;
 
@@ -29,6 +31,11 @@ public class CommentedJson {
 
     public String[] comments() {
         return comments;
+    }
+
+    @Override
+    public CommentedValue withComment(String[] comments) {
+        return new CommentedJson(json, comments);
     }
 
     public static class Object extends CommentedJson {
