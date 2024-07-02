@@ -16,7 +16,6 @@
         "sources": "${sources}"
     },
     "license": "${mod_license}",
-    "icon": "${mod_id}.png",
     "environment": "*",
     "entrypoints": {
         "main": [
