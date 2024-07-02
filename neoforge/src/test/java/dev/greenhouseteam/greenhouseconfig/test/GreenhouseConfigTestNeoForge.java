@@ -25,7 +25,7 @@ public class GreenhouseConfigTestNeoForge {
     public static class GameEvents {
         @SubscribeEvent
         public static void registerCommands(RegisterCommandsEvent event) {
-            GreenhouseConfigTest.registerServerReloadCommands(event.getDispatcher());
+            GreenhouseConfigTest.registerServerCommands(event.getDispatcher());
         }
     }
 }

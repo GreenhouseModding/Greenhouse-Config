@@ -1,6 +1,5 @@
 package dev.greenhouseteam.greenhouseconfig.test.client;
 
-import com.mojang.brigadier.CommandDispatcher;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
 
@@ -8,7 +7,7 @@ public class GreenhouseConfigTestFabricClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         ClientCommandRegistrationCallback.EVENT.register((dispatcher, registryAccess) ->
-                GreenhouseConfigTestClient.registerClientReloadCommands((CommandDispatcher)dispatcher)
+                GreenhouseConfigTestClient.registerClientCommands(dispatcher)
         );
     }
 }

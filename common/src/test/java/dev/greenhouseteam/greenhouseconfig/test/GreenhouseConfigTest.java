@@ -64,7 +64,7 @@ public class GreenhouseConfigTest {
     public static void init() {
     }
 
-    public static void registerServerReloadCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
+    public static void registerServerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralCommandNode<CommandSourceStack> ghTestNode = Commands
                 .literal("greenhousetest")
                 .build();
