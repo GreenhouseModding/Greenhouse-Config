@@ -102,7 +102,6 @@ public interface GreenhouseConfigHolder<T> {
         private Codec<T> clientCodec;
         private Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
         private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
-        private LiteralArgumentBuilder<CommandSourceStack> reloadCommandStarter;
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsServer = ImmutableMap.builder();
         private final Set<Integer> backwardsCompatClientVersions = new HashSet<>();
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsClient = ImmutableMap.builder();
@@ -196,17 +195,6 @@ public interface GreenhouseConfigHolder<T> {
         }
 
         /**
-         * Adds a simple reload command using the specified literal arguments.
-         * <p>
-         * @param builder   The argument(s) to use before running
-         *                  a reload command for this config.
-         */
-        public Builder<T> reloadCommandStarter(LiteralArgumentBuilder<CommandSourceStack> builder) {
-            reloadCommandStarter = builder;
-            return this;
-        }
-
-        /**
          * Adds a backwards compatibility codec used for converting from
          * an older version of this config to the current version for
          * both the dedicated server and client/integrated server.
@@ -282,7 +270,7 @@ public interface GreenhouseConfigHolder<T> {
             if (defaultServerValue == null && defaultClientValue == null)
                 throw new UnsupportedOperationException("Attempted to build config without a default value.");
 
-            GreenhouseConfigHolderImpl<T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, defaultServerValue, defaultClientValue, serverCodec, clientCodec, reloadCommandStarter, networkCodecFunction, postRegistryPopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
+            GreenhouseConfigHolderImpl<T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, defaultServerValue, defaultClientValue, serverCodec, clientCodec, networkCodecFunction, postRegistryPopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
 
             if (serverCodec != null)
                 GreenhouseConfigHolderRegistry.registerServerConfig(configName, config);

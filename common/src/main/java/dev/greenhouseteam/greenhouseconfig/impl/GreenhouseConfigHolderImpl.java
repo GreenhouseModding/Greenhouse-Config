@@ -26,8 +26,6 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     private final Codec<T> serverCodec;
     private final Codec<T> clientCodec;
     @Nullable
-    private final LiteralArgumentBuilder<CommandSourceStack> reloadCommandStarter;
-    @Nullable
     private final Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
     @Nullable
     private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
@@ -37,7 +35,6 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     public GreenhouseConfigHolderImpl(String configName, int schemaVersion,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
-                                      @Nullable LiteralArgumentBuilder<CommandSourceStack> reloadCommandStarter,
                                       @Nullable Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction,
                                       @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback,
                                       Map<Integer, Codec<T>> backwardsCompatCodecsServer,
@@ -48,7 +45,6 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         this.defaultClientValue = defaultClientValue;
         this.serverCodec = serverCodec;
         this.clientCodec = clientCodec;
-        this.reloadCommandStarter = reloadCommandStarter;
         this.networkCodecFunction = networkCodecFunction;
         this.postRegistryPopulationCallback = postRegistryPopulationCallback;
         this.backwardsCompatCodecsServer = backwardsCompatCodecsServer;
@@ -88,11 +84,6 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         if (postRegistryPopulationCallback == null)
             return;
         postRegistryPopulationCallback.accept(registries, value);
-    }
-
-    @Nullable
-    public LiteralArgumentBuilder<CommandSourceStack> getReloadCommandStarter() {
-        return reloadCommandStarter;
     }
 
     @Nullable
