@@ -4,8 +4,8 @@ import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCOps;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.CommentedJson;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCOps;
 import dev.greenhouseteam.greenhouseconfig.mixin.DelegatingOpsAccessor;
 import net.minecraft.resources.DelegatingOps;
 

@@ -1,4 +1,4 @@
-package dev.greenhouseteam.greenhouseconfig.api;
+package dev.greenhouseteam.greenhouseconfig.api.lang.jsonc;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.JsonElement;

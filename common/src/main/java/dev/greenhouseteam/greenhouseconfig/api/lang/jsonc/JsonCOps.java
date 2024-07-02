@@ -1,4 +1,4 @@
-package dev.greenhouseteam.greenhouseconfig.impl.jsonc;
+package dev.greenhouseteam.greenhouseconfig.api.lang.jsonc;
 
 import com.google.common.collect.Lists;
 import com.google.gson.JsonArray;
@@ -14,7 +14,7 @@ import com.mojang.serialization.Lifecycle;
 import com.mojang.serialization.ListBuilder;
 import com.mojang.serialization.MapLike;
 import com.mojang.serialization.RecordBuilder;
-import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashMap;

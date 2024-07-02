@@ -4,11 +4,11 @@ import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.JsonOps;
-import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.CommentedJson;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCOps;
-import dev.greenhouseteam.greenhouseconfig.impl.jsonc.JsonCWriter;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCOps;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCWriter;
 import dev.greenhouseteam.greenhouseconfig.impl.network.SyncGreenhouseConfigPacket;
 import net.minecraft.core.HolderLookup;
 
