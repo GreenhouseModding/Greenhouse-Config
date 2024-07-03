@@ -23,6 +23,11 @@ public final class JsonCLang implements ConfigLang<CommentedJson> {
     }
 
     @Override
+    public String getFileExtension() {
+        return "jsonc";
+    }
+
+    @Override
     public void write(Writer writer, CommentedJson configObj) throws IOException {
         JsonCWriter jsonCWriter = new JsonCWriter(writer);
         jsonCWriter.writeJson(configObj);

@@ -37,6 +37,13 @@ public interface GreenhouseConfigHolder<T> {
     String getConfigName();
 
     /**
+     * Gets the config file name.
+     * It is formatted like config/config_name.file_extension.
+     * @return The config file name.
+     */
+    String getConfigFileName();
+
+    /**
      * Whether this config is network sync-able.
      * @return True if the config is network sync-able, false if not.
      */

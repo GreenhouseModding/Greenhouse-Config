@@ -69,7 +69,7 @@ public class GreenhouseConfigStorage {
     }
 
     public static <C, T> T reloadConfig(GreenhouseConfigHolderImpl<C, T> holder, Consumer<String> onError) {
-        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
+        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + "." + holder.getConfigLang().getFileExtension()).toFile();
         try {
             var lang = holder.getConfigLang();
             var json = lang.read(new FileReader(file));
@@ -128,7 +128,7 @@ public class GreenhouseConfigStorage {
     }
 
     private static <C, T> void loadConfig(GreenhouseConfigHolderImpl<C, T> holder, BiConsumer<GreenhouseConfigHolder<?>, Object> consumer) {
-        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
+        File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + "." + holder.getConfigLang().getFileExtension()).toFile();
 
         if (file.exists()) {
             try {
@@ -177,7 +177,7 @@ public class GreenhouseConfigStorage {
                 Files.createDirectories(path);
             }
 
-            File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + ".jsonc").toFile();
+            File file = GreenhouseConfig.getPlatform().getConfigPath().resolve(holder.getConfigName() + "." + holder.getConfigLang().getFileExtension()).toFile();
             if (!file.exists())
                 Files.createFile(file.toPath());
             createConfig(holder, config, file);
@@ -191,8 +191,7 @@ public class GreenhouseConfigStorage {
         C element = holder.encode(config);
 
         if (ops.getMap(element).isError()) {
-            C object = ops.createMap(Map.of(ops.createString("value"), element));
-            element = object;
+            element = ops.createMap(Map.of(ops.createString("value"), element));
         }
 
         FileWriter writer = new FileWriter(file);

@@ -15,9 +15,14 @@ import com.mojang.serialization.DynamicOps;
  */
 public interface ConfigLang<T> {
     /**
-     * {@return the config type's ops}
+     * {@return The config type's ops}
      */
     DynamicOps<T> getOps();
+
+    /**
+     * {@return The config type's file extension.}
+     */
+    String getFileExtension();
 
     /**
      * Writes a config object to a writer.

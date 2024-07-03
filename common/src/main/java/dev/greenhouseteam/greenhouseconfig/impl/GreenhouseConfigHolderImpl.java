@@ -3,7 +3,6 @@ package dev.greenhouseteam.greenhouseconfig.impl;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
-import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
@@ -56,6 +55,11 @@ public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<
     @Override
     public String getConfigName() {
         return this.configName;
+    }
+
+    @Override
+    public String getConfigFileName() {
+        return "config/" + configName + "." + configLang.getFileExtension();
     }
 
     @Override
