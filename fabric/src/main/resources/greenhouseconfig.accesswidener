@@ -1,3 +1,2 @@
 accessWidener v1 named
 accessible method net/minecraft/resources/HolderSetCodec <init> (Lnet/minecraft/resources/ResourceKey;Lcom/mojang/serialization/Codec;Z)V
-accessible method net/minecraft/core/HolderSet$Named <init> (Lnet/minecraft/core/HolderOwner;Lnet/minecraft/tags/TagKey;)V
