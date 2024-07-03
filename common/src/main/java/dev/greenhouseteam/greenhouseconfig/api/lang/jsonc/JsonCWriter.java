@@ -1,8 +1,8 @@
-package dev.greenhouseteam.greenhouseconfig.impl.jsonc;
+package dev.greenhouseteam.greenhouseconfig.api.lang.jsonc;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
-import dev.greenhouseteam.greenhouseconfig.api.CommentedJson;
+
 import org.jetbrains.annotations.Nullable;
 
 import java.io.Closeable;
@@ -10,7 +10,6 @@ import java.io.Flushable;
 import java.io.IOException;
 import java.io.Writer;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 public class JsonCWriter implements Closeable, Flushable {
@@ -75,7 +74,7 @@ public class JsonCWriter implements Closeable, Flushable {
         }
     }
 
-    public void beginArray() throws IOException {
+    private void beginArray() throws IOException {
         writeSeparatorIfApplicable();
         writeComments();
         if (writeKey())
@@ -90,7 +89,7 @@ public class JsonCWriter implements Closeable, Flushable {
         ++this.indentationAmount;
     }
 
-    public void endArray() throws IOException {
+    private void endArray() throws IOException {
         if (this.objectCount[this.currentId] > 0) {
             this.writer.append("\n");
         }
@@ -104,7 +103,7 @@ public class JsonCWriter implements Closeable, Flushable {
         this.writer.append("]");
     }
 
-    public void beginObject() throws IOException {
+    private void beginObject() throws IOException {
         writeSeparatorIfApplicable();
         writeComments();
         if (writeKey())
@@ -119,7 +118,7 @@ public class JsonCWriter implements Closeable, Flushable {
         ++this.indentationAmount;
     }
 
-    public void endObject() throws IOException {
+    private void endObject() throws IOException {
         if (this.objectCount[this.currentId] > 0) {
             this.writer.append("\n");
         }
@@ -133,15 +132,15 @@ public class JsonCWriter implements Closeable, Flushable {
         this.writer.append("}");
     }
 
-    public void comments(String[] comments) {
+    private void comments(String[] comments) {
         this.comments = comments;
     }
 
-    public void key(String key) {
+    private void key(String key) {
         this.key = key;
     }
 
-    public void writeValue(Number number) throws IOException {
+    private void writeValue(Number number) throws IOException {
         writeSeparatorIfApplicable();
         writeComments();
         if (writeKey())
@@ -153,11 +152,11 @@ public class JsonCWriter implements Closeable, Flushable {
         ++objectCount[this.currentId];
     }
 
-    public void writeValue(boolean bool) throws IOException {
+    private void writeValue(boolean bool) throws IOException {
         this.writeValue(bool ? "true" : "false");
     }
 
-    public void writeValue(String string) throws IOException {
+    private void writeValue(String string) throws IOException {
         writeSeparatorIfApplicable();
         writeComments();
         if (writeKey())

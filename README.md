@@ -2,7 +2,7 @@
 Greenhouse Config is a config library for Fabric and NeoForge made for mostly myself (MerchantPug), however, any developer is free to utilise it and provide feedback for it.
 
 ## Features
-- A config system based on Mojang's Codec system that can utilise jsonc.
+- A config system based on Mojang's Codec system but adapted to utilise commented config file formats like jsonc.
 - A simple config builder that will handle the heavywork for you.
 - Config syncing between servers and clients, without changing the client's individual values.
 - LateHolderSet, a HolderSet/RegistryEntryList that can be resolved after datapack registries, but can be loaded before then.

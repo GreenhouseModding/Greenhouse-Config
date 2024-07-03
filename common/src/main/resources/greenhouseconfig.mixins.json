@@ -4,10 +4,6 @@
   "package": "dev.greenhouseteam.greenhouseconfig.mixin",
   "refmap": "${mod_id}.refmap.json",
   "compatibilityLevel": "JAVA_21",
-  "mixins": [
-    "DelegatingOpsAccessor",
-    "HolderSetNamedAccessor"
-  ],
   "injectors": {
     "defaultRequire": 1
   }

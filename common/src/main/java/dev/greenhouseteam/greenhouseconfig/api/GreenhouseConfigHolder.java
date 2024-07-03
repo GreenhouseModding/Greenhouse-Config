@@ -2,6 +2,9 @@ package dev.greenhouseteam.greenhouseconfig.api;
 
 import com.google.common.collect.ImmutableMap;
 import com.mojang.serialization.Codec;
+
+import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
+import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCLang;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
@@ -44,7 +47,7 @@ public interface GreenhouseConfigHolder<T> {
      * @return  Returns the config.
      */
     default T get() {
-        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<T>) this);
+        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<?, T>) this);
     }
 
     /**
@@ -62,7 +65,7 @@ public interface GreenhouseConfigHolder<T> {
      */
     @Nullable
     default T reloadConfig(Consumer<String> onError) {
-        return GreenhouseConfigStorage.reloadConfig((GreenhouseConfigHolderImpl<T>) this, onError);
+        return GreenhouseConfigStorage.reloadConfig((GreenhouseConfigHolderImpl<?, T>) this, onError);
     }
 
     /**
@@ -94,6 +97,7 @@ public interface GreenhouseConfigHolder<T> {
     class Builder<T> {
         private final String configName;
         private int schemaVersion = 1;
+        private ConfigLang<?> configLang = JsonCLang.INSTANCE;
         private T defaultServerValue;
         private T defaultClientValue;
         private Codec<T> serverCodec;
@@ -123,6 +127,19 @@ public interface GreenhouseConfigHolder<T> {
          */
         public Builder<T> schemaVersion(int schemaVersion) {
             this.schemaVersion = Math.max(1, schemaVersion);
+            return this;
+        }
+
+        /**
+         * Sets the config language for the config holder.
+         * <p>
+         * Note: this defaults to {@link JsonCLang#INSTANCE}.
+         *
+         * @param configLang the config language instance.
+         * @return this builder.
+         */
+        public Builder<T> language(ConfigLang<?> configLang) {
+            this.configLang = configLang;
             return this;
         }
 
@@ -268,7 +285,7 @@ public interface GreenhouseConfigHolder<T> {
             if (defaultServerValue == null && defaultClientValue == null)
                 throw new UnsupportedOperationException("Attempted to build config without a default value.");
 
-            GreenhouseConfigHolderImpl<T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, defaultServerValue, defaultClientValue, serverCodec, clientCodec, networkCodecFunction, postRegistryPopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
+            GreenhouseConfigHolderImpl<?, T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, configLang, defaultServerValue, defaultClientValue, serverCodec, clientCodec, networkCodecFunction, postRegistryPopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
 
             if (serverCodec != null)
                 GreenhouseConfigHolderRegistry.registerServerConfig(configName, config);

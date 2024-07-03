@@ -1,13 +1,13 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
-import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
-import net.minecraft.commands.CommandSourceStack;
+import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
+
 import net.minecraft.core.HolderLookup;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
@@ -17,10 +17,11 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
 
-public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> {
+public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<T> {
 
     private final String configName;
     private final int schemaVersion;
+    private final ConfigLang<C> configLang;
     private final T defaultServerValue;
     private final T defaultClientValue;
     private final Codec<T> serverCodec;
@@ -32,7 +33,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
     private final Map<Integer, Codec<T>> backwardsCompatCodecsServer;
     private final Map<Integer, Codec<T>> backwardsCompatCodecsClient;
 
-    public GreenhouseConfigHolderImpl(String configName, int schemaVersion,
+    public GreenhouseConfigHolderImpl(String configName, int schemaVersion, ConfigLang<C> configLang,
                                       T defaultServerValue, T defaultClientValue,
                                       Codec<T> serverCodec, Codec<T> clientCodec,
                                       @Nullable Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction,
@@ -41,6 +42,7 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
                                       Map<Integer, Codec<T>> backwardsCompatCodecsClient) {
         this.configName = configName;
         this.schemaVersion = schemaVersion;
+        this.configLang = configLang;
         this.defaultServerValue = defaultServerValue;
         this.defaultClientValue = defaultClientValue;
         this.serverCodec = serverCodec;
@@ -66,18 +68,22 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
         return GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? defaultServerValue : defaultClientValue;
     }
 
-    public <E> E encode(DynamicOps<E> ops, T value) {
+    public C encode(T value) {
         Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
-        return codec.encodeStart(ops, value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.configName + "'. " + s));
+        return codec.encodeStart(configLang.getOps(), value).getPartialOrThrow(s -> new IllegalStateException("Failed to encode config for mod '" + this.configName + "'. " + s));
     }
 
-    public <E> DataResult<Pair<T, E>> decode(DynamicOps<E> ops, E value) {
+    public DataResult<Pair<T, C>> decode(C value) {
         Codec<T> codec = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER ? serverCodec : clientCodec;
-        return codec.decode(ops, value);
+        return codec.decode(configLang.getOps(), value);
     }
 
     public int getSchemaVersion() {
         return this.schemaVersion;
+    }
+
+    public ConfigLang<C> getConfigLang() {
+        return configLang;
     }
 
     public void postRegistryPopulation(HolderLookup.Provider registries, T value) {
@@ -105,10 +111,15 @@ public class GreenhouseConfigHolderImpl<T> implements GreenhouseConfigHolder<T> 
 
     @Override
     public boolean equals(Object other) {
-        if (!(other instanceof GreenhouseConfigHolderImpl<?> otherHolder)) {
+        if (!(other instanceof GreenhouseConfigHolderImpl<?, ?> otherHolder)) {
             return false;
         }
 
         return otherHolder.configName.equals(this.configName);
+    }
+
+    @SuppressWarnings("unchecked")
+    public static GreenhouseConfigHolderImpl<Object, Object> cast(GreenhouseConfigHolder<?> holder) {
+        return (GreenhouseConfigHolderImpl<Object, Object>) holder;
     }
 }
