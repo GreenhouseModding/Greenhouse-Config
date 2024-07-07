@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 class TomlLexer {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+");
+    private static final Pattern INTEGER_RADIX_PATTERN = Pattern.compile("(\\+|-)?0(x|o|b)[0-9_]+");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+(\\.[0-9_]+)?((E|e)(\\+|-)?[0-9_]+)?");
     private static final Pattern ZONED_DATE_TIME_PATTERN =
         Pattern.compile("\\d{4}-\\d{2}-\\d{2}(T|t| )\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?(Z|z|((\\+|-)\\d{2}(:\\d{2})?))");
@@ -177,6 +178,32 @@ class TomlLexer {
             long value;
             try {
                 value = Long.parseLong(literalStr);
+            } catch (NumberFormatException e) {
+                addError("Error parsing integer.");
+                return null;
+            }
+
+            return makeToken(ValueType.INTEGER, value);
+        } else if (INTEGER_RADIX_PATTERN.matcher(literalStr).matches()) {
+            int offset = 2;
+            boolean negative = false;
+            if (literalStr.startsWith("-")) {
+                offset = 3;
+                negative = true;
+            } else if (literalStr.startsWith("+")) {
+                offset = 3;
+            }
+
+            int radix = switch (literalStr.charAt(offset - 1)) {
+                case 'x' -> 16;
+                case 'o' -> 8;
+                case 'b' -> 2;
+                default -> throw new IllegalStateException("Unexpected value: " + literalStr.charAt(offset - 1));
+            };
+
+            long value;
+            try {
+                value = Long.parseLong(literalStr.substring(offset), radix);
             } catch (NumberFormatException e) {
                 addError("Error parsing integer.");
                 return null;
