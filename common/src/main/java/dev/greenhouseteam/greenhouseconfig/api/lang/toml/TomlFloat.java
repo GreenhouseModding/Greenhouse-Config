@@ -1,7 +1,5 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a floating-point double.
  * <p>
@@ -27,7 +25,7 @@ public record TomlFloat(double value, String[] comments) implements TomlValue {
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlFloat withComment(String[] comments) {
         return new TomlFloat(value, comments);
     }
 }

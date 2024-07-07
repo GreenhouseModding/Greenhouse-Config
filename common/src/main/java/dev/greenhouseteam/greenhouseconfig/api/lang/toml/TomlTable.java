@@ -2,15 +2,13 @@ package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
 import java.util.Map;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML object, holding multiple named child elements.
  *
  * @param map      the map of string keys to TOML elements.
  * @param comments the comments associated with this value.
  */
-public record TomlObject(Map<String, TomlElement> map, String[] comments) implements TomlElement {
+public record TomlTable(Map<String, TomlElement> map, String[] comments) implements TomlElement {
     @Override
     public String[] getComment() {
         return comments;
@@ -22,7 +20,7 @@ public record TomlObject(Map<String, TomlElement> map, String[] comments) implem
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
-        return new TomlObject(map, comments);
+    public TomlTable withComment(String[] comments) {
+        return new TomlTable(map, comments);
     }
 }

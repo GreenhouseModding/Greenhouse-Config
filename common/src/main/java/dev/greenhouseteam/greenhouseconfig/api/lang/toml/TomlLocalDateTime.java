@@ -2,8 +2,6 @@ package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
 import java.time.LocalDateTime;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a local date-time.
  *
@@ -27,7 +25,7 @@ public record TomlLocalDateTime(LocalDateTime dateTime, String[] comments) imple
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlLocalDateTime withComment(String[] comments) {
         return new TomlLocalDateTime(dateTime, comments);
     }
 }

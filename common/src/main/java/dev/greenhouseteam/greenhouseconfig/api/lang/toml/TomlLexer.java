@@ -15,6 +15,7 @@ import java.util.regex.Pattern;
 import org.jetbrains.annotations.Nullable;
 
 import dev.greenhouseteam.greenhouseconfig.api.lang.util.CharBuffer;
+import dev.greenhouseteam.greenhouseconfig.api.lang.util.Token;
 
 class TomlLexer {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+");
@@ -128,6 +129,9 @@ class TomlLexer {
     Token<ValueType> nextValueToken() throws IOException {
         Token<ValueType> token = null;
         while (token == null && !isAtEnd()) {
+            // mark the beginning of the token, cause we shouldn't need anything from before this
+            buffer.mark();
+
             char c = advance();
             token = switch (c) {
                 // newlines mark the end of a value-side token

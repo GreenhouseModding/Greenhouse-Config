@@ -1,7 +1,5 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a string.
  *
@@ -25,7 +23,7 @@ public record TomlString(String value, String[] comments) implements TomlValue {
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlString withComment(String[] comments) {
         return new TomlString(value, comments);
     }
 }

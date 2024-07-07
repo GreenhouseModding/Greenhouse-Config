@@ -2,8 +2,6 @@ package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
 import java.time.ZonedDateTime;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a zoned date time.
  *
@@ -27,7 +25,7 @@ public record TomlOffsetDateTime(ZonedDateTime dateTime, String[] comments) impl
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlOffsetDateTime withComment(String[] comments) {
         return new TomlOffsetDateTime(dateTime, comments);
     }
 }

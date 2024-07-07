@@ -2,8 +2,6 @@ package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
 import java.time.LocalTime;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a local time.
  *
@@ -27,7 +25,7 @@ public record TomlLocalTime(LocalTime time, String[] comments) implements TomlVa
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlLocalTime withComment(String[] comments) {
         return new TomlLocalTime(time, comments);
     }
 }

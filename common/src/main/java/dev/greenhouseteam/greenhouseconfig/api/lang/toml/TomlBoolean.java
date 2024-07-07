@@ -1,7 +1,5 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
-import dev.greenhouseteam.greenhouseconfig.api.lang.CommentedValue;
-
 /**
  * A TOML value holding a boolean.
  *
@@ -25,7 +23,7 @@ public record TomlBoolean(boolean value, String[] comments) implements TomlValue
     }
 
     @Override
-    public CommentedValue withComment(String[] comments) {
+    public TomlBoolean withComment(String[] comments) {
         return new TomlBoolean(value, comments);
     }
 }
