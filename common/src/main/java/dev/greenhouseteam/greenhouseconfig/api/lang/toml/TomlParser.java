@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.io.Reader;
+
 /**
  * Parses a string into a TOML value tree.
  */
@@ -9,9 +11,9 @@ public class TomlParser {
     /**
      * Creates a new TOML parser.
      *
-     * @param tomlSource the toml source code to parse.
+     * @param reader the reader to read TOML source code from.
      */
-    public TomlParser(String tomlSource) {
-        lexer = new TomlLexer(tomlSource);
+    public TomlParser(Reader reader) {
+        lexer = new TomlLexer(reader);
     }
 }

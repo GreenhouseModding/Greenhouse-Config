@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.io.IOException;
+import java.io.Reader;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -12,6 +14,8 @@ import java.util.regex.Pattern;
 
 import org.jetbrains.annotations.Nullable;
 
+import dev.greenhouseteam.greenhouseconfig.api.lang.util.CharBuffer;
+
 class TomlLexer {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+");
     private static final Pattern INTEGER_RADIX_PATTERN = Pattern.compile("(\\+|-)?0(x|o|b)[0-9_]+");
@@ -23,7 +27,7 @@ class TomlLexer {
     private static final Pattern LOCAL_DATE_PATTERN = Pattern.compile("\\d{4}-\\d{2}-\\d{2}");
     private static final Pattern LOCAL_TIME_PATTERN = Pattern.compile("\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?");
 
-    private final String source;
+    private final CharBuffer buffer;
     private final List<LexError> errors = new ArrayList<>();
 
     private int start = 0;
@@ -31,8 +35,12 @@ class TomlLexer {
     private int line = 1;
     private int col = 1;
 
-    TomlLexer(String source) {
-        this.source = source;
+    TomlLexer(Reader reader) {
+        this(new CharBuffer(reader));
+    }
+
+    TomlLexer(CharBuffer buffer) {
+        this.buffer = buffer;
     }
 
     List<LexError> drainErrors() {
@@ -41,14 +49,17 @@ class TomlLexer {
         return errorsCopy;
     }
 
-    private boolean isAtEnd() {
-        return current >= source.length();
+    private boolean isAtEnd() throws IOException {
+        return !buffer.isAvailable(1);
     }
 
     @Nullable
-    Token<KeyType> nextKeyToken() {
+    Token<KeyType> nextKeyToken() throws IOException {
         Token<KeyType> token = null;
         while (token == null && !isAtEnd()) {
+            // mark the beginning of the token, cause we shouldn't need anything from before this
+            buffer.mark();
+
             char c = advance();
             token = switch (c) {
                 // newlines
@@ -72,7 +83,7 @@ class TomlLexer {
                     // collect the comment chars
                     int strStart = current;
                     while (peek() != '\n' && !isAtEnd()) advance();
-                    yield makeToken(KeyType.COMMENT, source.substring(strStart, current));
+                    yield makeToken(KeyType.COMMENT, buffer.substring(strStart, current));
                 }
                 // literals
                 case '"' -> string(KeyType.QUOTED_IDENT);
@@ -84,7 +95,7 @@ class TomlLexer {
         return token;
     }
 
-    private Token<KeyType> keyLiteral(char c) {
+    private Token<KeyType> keyLiteral(char c) throws IOException {
         StringBuilder builder = new StringBuilder();
         if (isKeyLiteralChar(c)) {
             builder.append(c);
@@ -115,7 +126,7 @@ class TomlLexer {
     }
 
     @Nullable
-    Token<ValueType> nextValueToken() {
+    Token<ValueType> nextValueToken() throws IOException {
         Token<ValueType> token = null;
         while (token == null && !isAtEnd()) {
             char c = advance();
@@ -140,7 +151,7 @@ class TomlLexer {
                     // collect the comment chars
                     int strStart = current;
                     while (peek() != '\n' && !isAtEnd()) advance();
-                    yield makeToken(ValueType.COMMENT, source.substring(strStart, current));
+                    yield makeToken(ValueType.COMMENT, buffer.substring(strStart, current));
                 }
                 // literals
                 case '"' -> {
@@ -158,7 +169,7 @@ class TomlLexer {
         return token;
     }
 
-    private Token<ValueType> valueLiteral(char c) {
+    private Token<ValueType> valueLiteral(char c) throws IOException {
         StringBuilder builder = new StringBuilder();
 
         if (isValueLiteralChar(c)) {
@@ -274,7 +285,7 @@ class TomlLexer {
             c == '.' || c == ':';
     }
 
-    private <T> Token<T> string(T type) {
+    private <T> Token<T> string(T type) throws IOException {
         StringBuilder stringBuilder = new StringBuilder();
 
         while (true) {
@@ -298,22 +309,22 @@ class TomlLexer {
         return makeToken(type, stringBuilder.toString());
     }
 
-    private <T> Token<T> literalString(T type) {
+    private <T> Token<T> literalString(T type) throws IOException {
         while (!isAtEnd() && peek() != '\'' && peek() != '\n') {
             advance();
         }
 
         if (isAtEnd() || peek() == '\n') {
             addError("Unexpected end of string.");
-            return makeToken(type, source.substring(start + 1, current));
+            return makeToken(type, buffer.substring(start + 1, current));
         } else {
             advance();
         }
 
-        return makeToken(type, source.substring(start + 1, current - 1));
+        return makeToken(type, buffer.substring(start + 1, current - 1));
     }
 
-    private Token<ValueType> multiLineString() {
+    private Token<ValueType> multiLineString() throws IOException {
         if (peek() == '\n') advance();
 
         StringBuilder stringBuilder = new StringBuilder();
@@ -346,7 +357,7 @@ class TomlLexer {
         return c == ' ' || c == '\t' || c == '\r' || c == '\n';
     }
 
-    private Token<ValueType> multiLineLiteralString() {
+    private Token<ValueType> multiLineLiteralString() throws IOException {
         if (peek() == '\n') advance();
 
         while (!isAtEnd() && !(peek() == '\'' && peek(1) == '\'' && peek(2) == '\'')) {
@@ -355,17 +366,17 @@ class TomlLexer {
 
         if (isAtEnd()) {
             addError("Unexpected end of string.");
-            return makeToken(ValueType.STRING, source.substring(start + 3, current));
+            return makeToken(ValueType.STRING, buffer.substring(start + 3, current));
         } else {
             advance();
             advance();
             advance();
         }
 
-        return makeToken(ValueType.STRING, source.substring(start + 3, current - 3));
+        return makeToken(ValueType.STRING, buffer.substring(start + 3, current - 3));
     }
 
-    private boolean escapeSequence(char terminator, StringBuilder stringBuilder) {
+    private boolean escapeSequence(char terminator, StringBuilder stringBuilder) throws IOException {
         if (isAtEnd()) {
             addError("Unexpected end of string in middle of escape sequence.");
             return true;
@@ -385,7 +396,7 @@ class TomlLexer {
         else if (next == 'f') stringBuilder.append('\f');
         else if (next == 'r') stringBuilder.append('\r');
         else if (next == 'u') {
-            if (source.length() < current + 4) {
+            if (buffer.isAvailable(4)) {
                 addError("Unexpected end of string in middle of escape sequence.");
                 return true;
             }
@@ -403,7 +414,7 @@ class TomlLexer {
 
             stringBuilder.append(Character.toChars(codepoint));
         } else if (next == 'U') {
-            if (source.length() < current + 8) {
+            if (buffer.isAvailable(8)) {
                 addError("Unexpected end of string in middle of escape sequence.");
                 return true;
             }
@@ -426,9 +437,10 @@ class TomlLexer {
         return false;
     }
 
-    private char advance() {
+    private char advance() throws IOException {
         col++;
-        char c = source.charAt(current++);
+        char c = buffer.advanceOrThrow();
+        current++;
         if (c == '\n') {
             col = 1;
             line++;
@@ -436,22 +448,20 @@ class TomlLexer {
         return c;
     }
 
-    private boolean match(char expected) {
+    private boolean match(char expected) throws IOException {
         if (isAtEnd()) return false;
-        if (source.charAt(current) != expected) return false;
+        if (buffer.peek(0) != expected) return false;
 
         advance();
         return true;
     }
 
-    private boolean match(String expected) {
-        if (isAtEnd()) return false;
-
+    private boolean match(String expected) throws IOException {
         // check string matches
         int expectedLen = expected.length();
-        if (source.length() < current + expectedLen) return false;
+        if (!buffer.isAvailable(expectedLen)) return false;
         for (int i = 0; i < expectedLen; i++) {
-            if (source.charAt(current + i) != expected.charAt(i)) return false;
+            if (buffer.peek(i) != expected.charAt(i)) return false;
         }
 
         // if string does match, consume it
@@ -462,27 +472,25 @@ class TomlLexer {
         return true;
     }
 
-    private char peek() {
-        if (isAtEnd()) return '\0';
-        return source.charAt(current);
+    private char peek() throws IOException {
+        return buffer.peek(0, '\0');
     }
 
-    private char peek(int offset) {
-        if (current + offset >= source.length()) return '\0';
-        return source.charAt(current + offset);
+    private char peek(int offset) throws IOException {
+        return buffer.peek(offset, '\0');
     }
 
-    private <T> Token<T> makeToken(T type) {
+    private <T> Token<T> makeToken(T type) throws IOException {
         return makeToken(type, null);
     }
 
-    private <T> Token<T> makeToken(T type, Object literal) {
-        String lexeme = source.substring(start, current);
-        return new Token<>(type, lexeme, literal, line, col, start, current - start);
+    private <T> Token<T> makeToken(T type, Object literal) throws IOException {
+        String lexeme = buffer.substring(start, buffer.getPos());
+        return new Token<>(type, lexeme, literal, line, col, start, buffer.getPos() - start);
     }
 
-    private void addError(String message) {
-        String lexeme = source.substring(start, current);
-        errors.add(new LexError(line, col, start, current - start, lexeme, message));
+    private void addError(String message) throws IOException {
+        String lexeme = buffer.substring(start, buffer.getPos());
+        errors.add(new LexError(line, col, start, buffer.getPos() - start, lexeme, message));
     }
 }
