@@ -31,7 +31,6 @@ class TomlLexer {
     private final List<LexError> errors = new ArrayList<>();
 
     private int start = 0;
-    private int current = 0;
     private int line = 1;
     private int col = 1;
 
@@ -81,9 +80,9 @@ class TomlLexer {
                     // remove the space at the beginning of the comment if it exists
                     if (peek() == ' ') advance();
                     // collect the comment chars
-                    int strStart = current;
+                    int strStart = buffer.getPos();
                     while (peek() != '\n' && !isAtEnd()) advance();
-                    yield makeToken(KeyType.COMMENT, buffer.substring(strStart, current));
+                    yield makeToken(KeyType.COMMENT, buffer.substring(strStart, buffer.getPos()));
                 }
                 // literals
                 case '"' -> string(KeyType.QUOTED_IDENT);
@@ -149,9 +148,9 @@ class TomlLexer {
                     // remove the space at the beginning of the comment if it exists
                     if (peek() == ' ') advance();
                     // collect the comment chars
-                    int strStart = current;
+                    int strStart = buffer.getPos();
                     while (peek() != '\n' && !isAtEnd()) advance();
-                    yield makeToken(ValueType.COMMENT, buffer.substring(strStart, current));
+                    yield makeToken(ValueType.COMMENT, buffer.substring(strStart, buffer.getPos()));
                 }
                 // literals
                 case '"' -> {
@@ -316,12 +315,12 @@ class TomlLexer {
 
         if (isAtEnd() || peek() == '\n') {
             addError("Unexpected end of string.");
-            return makeToken(type, buffer.substring(start + 1, current));
+            return makeToken(type, buffer.substring(start + 1, buffer.getPos()));
         } else {
             advance();
         }
 
-        return makeToken(type, buffer.substring(start + 1, current - 1));
+        return makeToken(type, buffer.substring(start + 1, buffer.getPos() - 1));
     }
 
     private Token<ValueType> multiLineString() throws IOException {
@@ -366,14 +365,14 @@ class TomlLexer {
 
         if (isAtEnd()) {
             addError("Unexpected end of string.");
-            return makeToken(ValueType.STRING, buffer.substring(start + 3, current));
+            return makeToken(ValueType.STRING, buffer.substring(start + 3, buffer.getPos()));
         } else {
             advance();
             advance();
             advance();
         }
 
-        return makeToken(ValueType.STRING, buffer.substring(start + 3, current - 3));
+        return makeToken(ValueType.STRING, buffer.substring(start + 3, buffer.getPos() - 3));
     }
 
     private boolean escapeSequence(char terminator, StringBuilder stringBuilder) throws IOException {
@@ -440,7 +439,6 @@ class TomlLexer {
     private char advance() throws IOException {
         col++;
         char c = buffer.advanceOrThrow();
-        current++;
         if (c == '\n') {
             col = 1;
             line++;
