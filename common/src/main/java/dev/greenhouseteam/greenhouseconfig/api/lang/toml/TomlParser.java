@@ -183,14 +183,41 @@ class TomlParser {
 
         return new TomlArray(elements, fullComments);
     }
-    
+
     private TomlTable tableValue(boolean inline) throws IOException {
         valBuf.advance();
         Map<String, TomlElement> tableElements = new LinkedHashMap<>();
 
-        // TODO: HELP ME
+        if (valBuf.peekType(0) == ValueType.STRING) {
+            do {
+                // value tokens parse '.' chars as part of a single string instead of as their own token
+                // (helps with number parsing)
+                String[] path = valuePath();
+
+                valBuf.expect(ValueType.EQUALS);
+
+                TomlElement elem = value(true);
+
+                insert(elem, tableElements, path, 0);
+            } while (valBuf.peekType(0) == ValueType.COMMA);
+        }
 
         return new TomlTable(tableElements, new String[0]);
+    }
+
+    private void insert(TomlElement elem, Map<String, TomlElement> root, String[] path, int pathIndex)
+        throws IOException {
+        String key = path[pathIndex];
+
+        if (path.length > pathIndex + 1) {
+            TomlElement child = root.computeIfAbsent(key, k -> new TomlTable(new LinkedHashMap<>(), new String[0]));
+            if (!(child instanceof TomlTable childTable))
+                throw new IOException("Tried to define child of " + key + " but it was already defined as " + child);
+
+            insert(elem, childTable.map(), path, pathIndex + 1);
+        } else {
+            root.put(key, elem);
+        }
     }
 
     private TomlString stringValue(boolean inline) throws IOException {
@@ -308,6 +335,14 @@ class TomlParser {
         }
 
         return comments.toArray(String[]::new);
+    }
+
+    private String[] valuePath() throws IOException {
+        Token<ValueType> string = valBuf.expect(ValueType.STRING);
+        if (!(string.literal() instanceof String str))
+            throw new IllegalStateException("Encountered STRING token with non-string literal");
+
+        return str.split("\\.");
     }
 
     private void expectValueEnd() throws IOException {
