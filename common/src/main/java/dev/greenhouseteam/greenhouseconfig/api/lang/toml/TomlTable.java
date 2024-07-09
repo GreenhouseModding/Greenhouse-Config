@@ -1,5 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
 import java.util.Map;
 
 /**
@@ -22,5 +23,10 @@ public record TomlTable(Map<String, TomlElement> map, String[] comments) impleme
     @Override
     public TomlTable withComment(String[] comments) {
         return new TomlTable(map, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlTable{" + map + ", " + Arrays.toString(comments) + "}";
     }
 }

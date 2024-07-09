@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
+
 /**
  * A TOML value holding a long integer.
  *
@@ -25,5 +27,10 @@ public record TomlInteger(long value, String[] comments) implements TomlValue {
     @Override
     public TomlInteger withComment(String[] comments) {
         return new TomlInteger(value, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlInteger{" + value + ", " + Arrays.toString(comments) + "}";
     }
 }

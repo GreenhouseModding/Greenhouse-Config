@@ -1,4 +1,4 @@
-package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
+package dev.greenhouseteam.greenhouseconfig.impl.lang.toml;
 
 import java.io.IOException;
 import java.io.Reader;
@@ -17,7 +17,7 @@ import org.jetbrains.annotations.Nullable;
 import dev.greenhouseteam.greenhouseconfig.api.lang.util.CharBuffer;
 import dev.greenhouseteam.greenhouseconfig.api.lang.util.Token;
 
-class TomlLexer {
+public class TomlLexer {
     private static final Pattern INTEGER_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+");
     private static final Pattern INTEGER_RADIX_PATTERN = Pattern.compile("(\\+|-)?0(x|o|b)[0-9_]+");
     private static final Pattern FLOAT_PATTERN = Pattern.compile("(\\+|-)?[0-9_]+(\\.[0-9_]+)?((E|e)(\\+|-)?[0-9_]+)?");
@@ -35,15 +35,15 @@ class TomlLexer {
     private int line = 1;
     private int col = 1;
 
-    TomlLexer(Reader reader) {
+    public TomlLexer(Reader reader) {
         this(new CharBuffer(reader));
     }
 
-    TomlLexer(CharBuffer buffer) {
+    public TomlLexer(CharBuffer buffer) {
         this.buffer = buffer;
     }
 
-    List<LexError> drainErrors() {
+    public List<LexError> drainErrors() {
         List<LexError> errorsCopy = new ArrayList<>(errors);
         errors.clear();
         return errorsCopy;
@@ -54,11 +54,12 @@ class TomlLexer {
     }
 
     @Nullable
-    Token<KeyType> nextKeyToken() throws IOException {
+    public Token<KeyType> nextKeyToken() throws IOException {
         Token<KeyType> token = null;
         while (token == null && !isAtEnd()) {
             // mark the beginning of the token, cause we shouldn't need anything from before this
             buffer.mark();
+            start = buffer.getPos();
 
             char c = advance();
             token = switch (c) {
@@ -131,6 +132,7 @@ class TomlLexer {
         while (token == null && !isAtEnd()) {
             // mark the beginning of the token, cause we shouldn't need anything from before this
             buffer.mark();
+            start = buffer.getPos();
 
             char c = advance();
             token = switch (c) {
@@ -278,8 +280,7 @@ class TomlLexer {
 
             return makeToken(ValueType.LOCAL_TIME, time);
         } else {
-            addError("Unrecognized literal.");
-            return null;
+            return makeToken(ValueType.RAW_LITERAL, literalStr);
         }
     }
 

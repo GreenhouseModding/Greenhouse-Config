@@ -1,6 +1,6 @@
-package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
+package dev.greenhouseteam.greenhouseconfig.impl.lang.toml;
 
-enum KeyType {
+public enum KeyType {
     // Single-character tokens
     LEFT_BRACKET,
     RIGHT_BRACKET,

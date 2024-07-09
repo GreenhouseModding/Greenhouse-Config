@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
+
 /**
  * A TOML value holding a floating-point double.
  * <p>
@@ -27,5 +29,10 @@ public record TomlFloat(double value, String[] comments) implements TomlValue {
     @Override
     public TomlFloat withComment(String[] comments) {
         return new TomlFloat(value, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlFloat{" + value + ", " + Arrays.toString(comments) + "}";
     }
 }

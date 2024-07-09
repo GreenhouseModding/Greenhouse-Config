@@ -1,6 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
 import java.time.LocalDate;
+import java.util.Arrays;
 
 /**
  * A TOML value holding a local date.
@@ -27,5 +28,10 @@ public record TomlLocalDate(LocalDate date, String[] comments) implements TomlVa
     @Override
     public TomlLocalDate withComment(String[] comments) {
         return new TomlLocalDate(date, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlLocalDate{" + date + ", " + Arrays.toString(comments) + "}";
     }
 }

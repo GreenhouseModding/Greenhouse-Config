@@ -153,7 +153,7 @@ public class CharBuffer {
         int availPos = ensureRead(pos + offset + 1);
         if (availPos <= pos + offset) return -1;
 
-        return buffer[pos + offset];
+        return buffer[pos - start + offset];
     }
 
     /**
@@ -273,7 +273,7 @@ public class CharBuffer {
         // not enough could be read to have anything
         if (realEndPos <= beginPos) return "";
 
-        return String.valueOf(buffer, beginPos, Math.min(endPos, realEndPos) - beginPos);
+        return String.valueOf(buffer, beginPos - start, Math.min(endPos, realEndPos) - beginPos);
     }
 
     /**

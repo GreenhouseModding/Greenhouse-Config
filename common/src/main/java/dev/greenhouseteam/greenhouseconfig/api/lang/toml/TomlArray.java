@@ -1,5 +1,6 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -22,5 +23,10 @@ public record TomlArray(List<TomlElement> list, String[] comments) implements To
     @Override
     public TomlArray withComment(String[] comments) {
         return new TomlArray(list, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlArray{" + list + ", " + Arrays.toString(comments) + "}";
     }
 }

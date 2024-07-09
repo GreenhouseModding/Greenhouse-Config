@@ -1,6 +1,6 @@
-package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
+package dev.greenhouseteam.greenhouseconfig.impl.lang.toml;
 
-enum ValueType {
+public enum ValueType {
     // Single-character tokens
     LEFT_BRACKET,
     RIGHT_BRACKET,
@@ -19,6 +19,7 @@ enum ValueType {
     LOCAL_DATE_TIME,
     LOCAL_DATE,
     LOCAL_TIME,
+    RAW_LITERAL,
 
     // Comments
     COMMENT

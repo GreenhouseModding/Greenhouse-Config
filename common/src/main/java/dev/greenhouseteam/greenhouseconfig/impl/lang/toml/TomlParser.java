@@ -1,4 +1,4 @@
-package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
+package dev.greenhouseteam.greenhouseconfig.impl.lang.toml;
 
 import java.io.EOFException;
 import java.io.IOException;
@@ -14,13 +14,24 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlArray;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlBoolean;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlElement;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlFloat;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlInteger;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlLocalDate;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlLocalDateTime;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlLocalTime;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlOffsetDateTime;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlString;
+import dev.greenhouseteam.greenhouseconfig.api.lang.toml.TomlTable;
 import dev.greenhouseteam.greenhouseconfig.api.lang.util.Token;
 import dev.greenhouseteam.greenhouseconfig.api.lang.util.TokenBuffer;
 
 /**
  * Parses a string into a TOML value tree.
  */
-class TomlParser {
+public class TomlParser {
     private final TomlLexer lexer;
     private final TokenBuffer<KeyType> keyBuf;
     private final TokenBuffer<ValueType> valBuf;
@@ -30,7 +41,7 @@ class TomlParser {
      *
      * @param reader the reader to read TOML source code from.
      */
-    TomlParser(Reader reader) {
+    public TomlParser(Reader reader) {
         lexer = new TomlLexer(reader);
         keyBuf = new TokenBuffer<>(lexer::nextKeyToken);
         valBuf = new TokenBuffer<>(lexer::nextValueToken);
@@ -42,7 +53,7 @@ class TomlParser {
      * @return the parsed {@link TomlFileDocument}.
      * @throws IOException if an IO error ocurrs while reading the toml file.
      */
-    TomlFileDocument parse() throws IOException {
+    public TomlFileDocument parse() throws IOException {
         return document();
     }
 
@@ -126,7 +137,7 @@ class TomlParser {
     private TomlElement value(boolean inline) throws IOException {
         return switch (valBuf.peekType(0)) {
             case LEFT_BRACKET -> arrayValue(inline);
-            case LEFT_BRACE -> null;
+            case LEFT_BRACE -> tableValue(inline);
             case STRING -> stringValue(inline);
             case INTEGER -> integerValue(inline);
             case FLOAT -> floatValue(inline);
@@ -167,10 +178,19 @@ class TomlParser {
 
             elements.add(value.withComment(concat(nextComments, value.getComment())));
 
+            // consume the comma if it exists
+            if (valBuf.peekType(0) == ValueType.COMMA) valBuf.advance();
+
             // vacuum up newlines inside arrays
             while (valBuf.peekType(0) == ValueType.NEW_LINE) valBuf.advance();
 
+            // i guess a comma could technically exist here???
+            if (valBuf.peekType(0) == ValueType.COMMA) valBuf.advance();
+
             nextComments = valueMultiComment();
+
+            // i guess a comma could technically be here too?????
+            if (valBuf.peekType(0) == ValueType.COMMA) valBuf.advance();
         }
 
         valBuf.expect(ValueType.RIGHT_BRACKET);
@@ -185,10 +205,10 @@ class TomlParser {
     }
 
     private TomlTable tableValue(boolean inline) throws IOException {
-        valBuf.advance();
+        Token<ValueType> advance = valBuf.advance();
         Map<String, TomlElement> tableElements = new LinkedHashMap<>();
 
-        if (valBuf.peekType(0) == ValueType.STRING) {
+        if (valBuf.peekType(0) == ValueType.RAW_LITERAL) {
             do {
                 // value tokens parse '.' chars as part of a single string instead of as their own token
                 // (helps with number parsing)
@@ -199,8 +219,12 @@ class TomlParser {
                 TomlElement elem = value(true);
 
                 insert(elem, tableElements, path, 0);
-            } while (valBuf.peekType(0) == ValueType.COMMA);
+            } while (valBuf.expect(ValueType.COMMA, ValueType.RIGHT_BRACE).type() == ValueType.COMMA);
         }
+
+        String[] comments = valueComment();
+
+        if (!inline) expectValueEnd();
 
         return new TomlTable(tableElements, new String[0]);
     }
@@ -338,9 +362,9 @@ class TomlParser {
     }
 
     private String[] valuePath() throws IOException {
-        Token<ValueType> string = valBuf.expect(ValueType.STRING);
+        Token<ValueType> string = valBuf.expect(ValueType.RAW_LITERAL);
         if (!(string.literal() instanceof String str))
-            throw new IllegalStateException("Encountered STRING token with non-string literal");
+            throw new IllegalStateException("Encountered RAW_LITERAL token with non-string literal");
 
         return str.split("\\.");
     }

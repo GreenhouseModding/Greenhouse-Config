@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
+
 /**
  * A TOML value holding a string.
  *
@@ -25,5 +27,10 @@ public record TomlString(String value, String[] comments) implements TomlValue {
     @Override
     public TomlString withComment(String[] comments) {
         return new TomlString(value, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlString{\"" + value + "\", " + Arrays.toString(comments) + "}";
     }
 }

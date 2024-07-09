@@ -1,5 +1,7 @@
 package dev.greenhouseteam.greenhouseconfig.api.lang.toml;
 
+import java.util.Arrays;
+
 /**
  * A TOML value holding a boolean.
  *
@@ -25,5 +27,10 @@ public record TomlBoolean(boolean value, String[] comments) implements TomlValue
     @Override
     public TomlBoolean withComment(String[] comments) {
         return new TomlBoolean(value, comments);
+    }
+
+    @Override
+    public String toString() {
+        return "TomlBoolean{" + value + ", " + Arrays.toString(comments) + "}";
     }
 }
