@@ -167,14 +167,14 @@ public class GreenhouseConfigStorage {
         }
 
         consumer.accept(holder, holder.getDefaultValue());
-        saveOrCreateConfig(holder, holder.getDefaultValue());
+        saveConfig(holder, holder.getDefaultValue());
     }
 
-    public static <T> void saveOrCreateConfig(GreenhouseConfigHolder<T> holder, T config) {
-        saveOrCreateConfig((GreenhouseConfigHolderImpl<?, T>) holder, config);
+    public static <T> void saveConfig(GreenhouseConfigHolder<T> holder, T config) {
+        saveConfig((GreenhouseConfigHolderImpl<?, T>) holder, config);
     }
     
-    private static <C, T> void saveOrCreateConfig(GreenhouseConfigHolderImpl<C, T> holder, T config) {
+    private static <C, T> void saveConfig(GreenhouseConfigHolderImpl<C, T> holder, T config) {
         try {
             int folderCount = holder.getConfigName().split("/").length;
 

@@ -60,12 +60,12 @@ public interface GreenhouseConfigHolder<T> {
     }
 
     /**
-     * Creates a config file within the config directory.
+     * Saves a config file within the config directory.
      *
      * @param value The config value.
      */
-    default void saveOrCreateConfig(T value) {
-        GreenhouseConfigStorage.saveOrCreateConfig(this, value);
+    default void saveConfig(T value) {
+        GreenhouseConfigStorage.saveConfig(this, value);
     }
 
     /**
