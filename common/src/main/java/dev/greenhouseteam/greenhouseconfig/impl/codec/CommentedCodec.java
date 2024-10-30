@@ -12,11 +12,11 @@ import net.minecraft.resources.DelegatingOps;
 import java.util.List;
 
 public class CommentedCodec<T> implements Codec<T> {
-    protected final List<String> comments;
+    protected final String[] comments;
     protected final Codec<T> baseCodec;
 
-    public CommentedCodec(List<String> comment, Codec<T> codec) {
-        this.comments = comment;
+    public CommentedCodec(Codec<T> codec, String... comments) {
+        this.comments = comments;
         this.baseCodec = codec;
     }
 
@@ -29,7 +29,7 @@ public class CommentedCodec<T> implements Codec<T> {
     public <T1> DataResult<T1> encode(T input, DynamicOps<T1> ops, T1 prefix) {
         DataResult<T1> result = baseCodec.encode(input, ops, prefix);
         if (result.hasResultOrPartial() && result.getPartialOrThrow() instanceof CommentedValue commented) {
-            commented = commented.withComment(comments.toArray(String[]::new));
+            commented = commented.withComment(comments);
             return DataResult.success((T1) commented);
         }
         return result;

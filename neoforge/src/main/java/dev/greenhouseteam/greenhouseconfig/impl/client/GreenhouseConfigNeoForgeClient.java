@@ -25,5 +25,9 @@ public class GreenhouseConfigNeoForgeClient {
         public static void onPlayerJoin(ClientPlayerNetworkEvent.LoggingIn event) {
             GreenhouseConfigClient.onWorldJoin(event.getPlayer().level().registryAccess());
         }
+        @SubscribeEvent
+        public static void onPlayerLeave(ClientPlayerNetworkEvent.LoggingOut event) {
+            GreenhouseConfigClient.onWorldLeave();
+        }
     }
 }

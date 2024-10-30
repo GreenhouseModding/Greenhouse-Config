@@ -74,11 +74,16 @@ public class GreenhouseConfigFabricPlatformHelper implements GHConfigIPlatformHe
 
     @Override
     public <T> void postLoadEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
-        GreenhouseConfigEvents.POST_LOAD.invoker().onConfigLoad(holder, config, side);
+        GreenhouseConfigEvents.POST_LOAD.invoker().onConfig(holder, config, side);
     }
 
     @Override
     public <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
-        GreenhouseConfigEvents.POST_POPULATION.invoker().onConfigLoad(holder, config, side);
+        GreenhouseConfigEvents.POST_POPULATION.invoker().onConfig(holder, config, side);
+    }
+
+    @Override
+    public <T> void postDepopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side) {
+        GreenhouseConfigEvents.POST_DEPOPULATION.invoker().onConfig(holder, config, side);
     }
 }

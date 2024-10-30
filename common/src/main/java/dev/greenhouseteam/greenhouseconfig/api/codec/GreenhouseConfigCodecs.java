@@ -3,7 +3,11 @@ package dev.greenhouseteam.greenhouseconfig.api.codec;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
+import dev.greenhouseteam.greenhouseconfig.api.util.LateHolder;
 import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
+import dev.greenhouseteam.greenhouseconfig.impl.codec.LateHolderCodec;
+import dev.greenhouseteam.greenhouseconfig.impl.util.LateHolderImpl;
+import dev.greenhouseteam.greenhouseconfig.impl.util.LateHolderSetImpl;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.DefaultedCodec;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.LateHolderSetCodec;
 import dev.greenhouseteam.greenhouseconfig.impl.codec.CommentedCodec;
@@ -26,65 +30,15 @@ public class GreenhouseConfigCodecs {
         return new DefaultedCodec<>(name, codec, defaultValue).setPartial(() -> defaultValue);
     }
 
-    public static <A> Codec<A> commentedCodec(List<String> comments, Codec<A> codec) {
-        return new CommentedCodec<>(comments, codec);
+    public static <A> Codec<A> commentedCodec(Codec<A> codec, String... comments) {
+        return new CommentedCodec<>(codec, comments);
     }
 
-    public static <E> LateHolderSetCodec<E> lateHoldersCodec(ResourceKey<? extends Registry<E>> registry) {
+    public static <E> Codec<Holder<E>> lateHolderCodec(ResourceKey<Registry<E>> registry) {
+        return new LateHolderCodec<>(registry);
+    }
+
+    public static <E> Codec<HolderSet<E>> lateHolderSetCodec(ResourceKey<? extends Registry<E>> registry) {
         return new LateHolderSetCodec<>(registry);
-    }
-
-    public static <T> StreamCodec<ByteBuf, HolderSet<T>> lateHoldersStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
-        return new StreamCodec<>() {
-            private final StreamCodec<ByteBuf, ResourceKey<T>> holderCodec = ResourceKey.streamCodec(registryKey);
-
-            public HolderSet<T> decode(ByteBuf buf) {
-                int i = VarInt.read(buf) - 1;
-                if (i == -1) {
-                    return LateHolderSet.createFromTags((ResourceKey<Registry<T>>) registryKey, List.of(TagKey.create(registryKey, ResourceLocation.STREAM_CODEC.decode(buf))));
-                } else {
-                    List<TagKey<T>> tags = new ArrayList<>(Math.min(i, 65536));
-                    List<ResourceKey<T>> entries = new ArrayList<>(Math.min(i, 65536));
-
-                    for (int j = 0; j < i; ++j) {
-                        boolean isTag = buf.readBoolean();
-                        if (isTag)
-                            tags.add(TagKey.create(registryKey, ResourceLocation.STREAM_CODEC.decode(buf)));
-                        else
-                            entries.add(holderCodec.decode(buf));
-                    }
-
-                    return LateHolderSet.createMixed((ResourceKey<Registry<T>>) registryKey, tags, entries);
-                }
-            }
-
-            public void encode(ByteBuf buf, HolderSet<T> holderSet) {
-                Optional<TagKey<T>> optional = holderSet.unwrapKey();
-                if (optional.isPresent()) {
-                    VarInt.write(buf, -1);
-                    ResourceLocation.STREAM_CODEC.encode(buf, optional.get().location());
-                } else {
-                    VarInt.write(buf, holderSet.size() + 1);
-                    if (holderSet instanceof LateHolderSet<T> late) {
-
-                        for (Either<TagKey<T>, ResourceKey<T>> value : late.keys()) {
-                            if (value.left().isPresent()) {
-                                buf.writeBoolean(true);
-                                ResourceLocation.STREAM_CODEC.encode(buf, value.left().orElseThrow().location());
-                            } else {
-                                buf.writeBoolean(false);
-                                holderCodec.encode(buf, value.right().orElseThrow());
-                            }
-                        }
-                    } else {
-                        for (Holder<T> value : holderSet) {
-                            buf.writeBoolean(false);
-                            holderCodec.encode(buf, value.unwrapKey().orElseThrow());
-                        }
-                    }
-                }
-
-            }
-        };
     }
 }

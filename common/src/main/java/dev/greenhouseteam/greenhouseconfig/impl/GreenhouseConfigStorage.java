@@ -1,10 +1,8 @@
 package dev.greenhouseteam.greenhouseconfig.impl;
 
 import com.google.common.collect.ImmutableList;
-import com.google.gson.JsonParser;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DynamicOps;
-import com.mojang.serialization.JsonOps;
 
 import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
@@ -118,6 +116,15 @@ public class GreenhouseConfigStorage {
         }
     }
 
+    public static void onRegistryDepopulation() {
+        boolean isServer = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER;
+        Map<GreenhouseConfigHolder<?>, Object> configs = isServer ? SERVER_CONFIGS : CLIENT_CONFIGS;
+        for (Map.Entry<GreenhouseConfigHolder<?>, Object> entry : configs.entrySet()) {
+            GreenhouseConfigHolderImpl.cast(entry.getKey()).postRegistryDepopulation(entry.getValue());
+            GreenhouseConfig.getPlatform().postDepopulationEvent((GreenhouseConfigHolder<Object>) entry.getKey(), entry.getValue(), GreenhouseConfig.getPlatform().getSide());
+        }
+    }
+
     public static void individualRegistryPopulation(HolderLookup.Provider registries, GreenhouseConfigHolder<?> holder) {
         individualRegistryPopulation(registries, holder, holder.get());
     }
@@ -160,14 +167,14 @@ public class GreenhouseConfigStorage {
         }
 
         consumer.accept(holder, holder.getDefaultValue());
-        createConfig(holder, holder.getDefaultValue());
+        saveOrCreateConfig(holder, holder.getDefaultValue());
     }
 
-    public static <T> void createConfig(GreenhouseConfigHolder<T> holder, T config) {
-        createConfig((GreenhouseConfigHolderImpl<?, T>) holder, config);
+    public static <T> void saveOrCreateConfig(GreenhouseConfigHolder<T> holder, T config) {
+        saveOrCreateConfig((GreenhouseConfigHolderImpl<?, T>) holder, config);
     }
     
-    private static <C, T> void createConfig(GreenhouseConfigHolderImpl<C, T> holder, T config) {
+    private static <C, T> void saveOrCreateConfig(GreenhouseConfigHolderImpl<C, T> holder, T config) {
         try {
             int folderCount = holder.getConfigName().split("/").length;
 

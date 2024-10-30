@@ -14,6 +14,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.Map;
 import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<T> {
@@ -29,6 +30,8 @@ public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<
     private final Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
     @Nullable
     private final BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
+    @Nullable
+    private final Consumer<T> postRegistryDepopulationCallback;
     private final Map<Integer, Codec<T>> backwardsCompatCodecsServer;
     private final Map<Integer, Codec<T>> backwardsCompatCodecsClient;
 
@@ -37,6 +40,7 @@ public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<
                                       Codec<T> serverCodec, Codec<T> clientCodec,
                                       @Nullable Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction,
                                       @Nullable BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback,
+                                      @Nullable Consumer<T> postRegistryDepopulationCallback,
                                       Map<Integer, Codec<T>> backwardsCompatCodecsServer,
                                       Map<Integer, Codec<T>> backwardsCompatCodecsClient) {
         this.configName = configName;
@@ -48,6 +52,7 @@ public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<
         this.clientCodec = clientCodec;
         this.networkCodecFunction = networkCodecFunction;
         this.postRegistryPopulationCallback = postRegistryPopulationCallback;
+        this.postRegistryDepopulationCallback = postRegistryDepopulationCallback;
         this.backwardsCompatCodecsServer = backwardsCompatCodecsServer;
         this.backwardsCompatCodecsClient = backwardsCompatCodecsClient;
     }
@@ -94,6 +99,12 @@ public class GreenhouseConfigHolderImpl<C, T> implements GreenhouseConfigHolder<
         if (postRegistryPopulationCallback == null)
             return;
         postRegistryPopulationCallback.accept(registries, value);
+    }
+
+    public void postRegistryDepopulation(T value) {
+        if (postRegistryDepopulationCallback == null)
+            return;
+        postRegistryDepopulationCallback.accept(value);
     }
 
     @Nullable

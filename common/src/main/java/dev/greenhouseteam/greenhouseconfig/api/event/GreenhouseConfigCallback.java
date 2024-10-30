@@ -4,6 +4,6 @@ import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 
 @FunctionalInterface
-public interface GreenhouseConfigLoadEvent {
-    void onConfigLoad(GreenhouseConfigHolder<?> holder, Object config, GreenhouseConfigSide side);
+public interface GreenhouseConfigCallback {
+    void onConfig(GreenhouseConfigHolder<?> holder, Object config, GreenhouseConfigSide side);
 }

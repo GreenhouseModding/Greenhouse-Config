@@ -1,19 +1,25 @@
 package dev.greenhouseteam.greenhouseconfig.api;
 
-import dev.greenhouseteam.greenhouseconfig.api.event.GreenhouseConfigLoadEvent;
+import dev.greenhouseteam.greenhouseconfig.api.event.GreenhouseConfigCallback;
 import net.fabricmc.fabric.api.event.Event;
 import net.fabricmc.fabric.api.event.EventFactory;
 
 public class GreenhouseConfigEvents {
-    public static final Event<GreenhouseConfigLoadEvent> POST_LOAD = EventFactory.createArrayBacked(GreenhouseConfigLoadEvent.class, callbacks -> (holder, config, side) -> {
-        for (GreenhouseConfigLoadEvent callback : callbacks) {
-            callback.onConfigLoad(holder, config, side);
+    public static final Event<GreenhouseConfigCallback> POST_LOAD = EventFactory.createArrayBacked(GreenhouseConfigCallback.class, callbacks -> (holder, config, side) -> {
+        for (GreenhouseConfigCallback callback : callbacks) {
+            callback.onConfig(holder, config, side);
         }
     });
 
-    public static final Event<GreenhouseConfigLoadEvent> POST_POPULATION = EventFactory.createArrayBacked(GreenhouseConfigLoadEvent.class, callbacks -> (holder, config, side) -> {
-        for (GreenhouseConfigLoadEvent callback : callbacks) {
-            callback.onConfigLoad(holder, config, side);
+    public static final Event<GreenhouseConfigCallback> POST_POPULATION = EventFactory.createArrayBacked(GreenhouseConfigCallback.class, callbacks -> (holder, config, side) -> {
+        for (GreenhouseConfigCallback callback : callbacks) {
+            callback.onConfig(holder, config, side);
+        }
+    });
+
+    public static final Event<GreenhouseConfigCallback> POST_DEPOPULATION = EventFactory.createArrayBacked(GreenhouseConfigCallback.class, callbacks -> (holder, config, side) -> {
+        for (GreenhouseConfigCallback callback : callbacks) {
+            callback.onConfig(holder, config, side);
         }
     });
 }

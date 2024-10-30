@@ -84,4 +84,14 @@ public interface GHConfigIPlatformHelper {
      * @param <T>       The config class.
      */
     <T> void postPopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side);
+
+    /**
+     * Runs the loader specific post registry population event.
+     *
+     * @param holder    The config holder.
+     * @param config    The value associated with the config holder.
+     * @param side      The side of this operation.
+     * @param <T>       The config class.
+     */
+    <T> void postDepopulationEvent(GreenhouseConfigHolder<T> holder, T config, GreenhouseConfigSide side);
 }

@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableList;
 import com.mojang.datafixers.util.Pair;
 import com.mojang.serialization.DataResult;
 import com.mojang.serialization.DynamicOps;
-import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
+import dev.greenhouseteam.greenhouseconfig.impl.util.LateHolderSetImpl;
 import net.minecraft.core.HolderSet;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.HolderSetCodec;
@@ -41,12 +41,12 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
             else
                 entries.add(ResourceKey.create(registryKey, ResourceLocation.parse(string)));
         }
-        return DataResult.success(Pair.of(LateHolderSet.createMixed((ResourceKey<Registry<E>>) registryKey, tags.build(), entries.build()), value));
+        return DataResult.success(Pair.of(LateHolderSetImpl.createMixed((ResourceKey<Registry<E>>) registryKey, tags.build(), entries.build()), value));
     }
 
     @Override
     public <T> DataResult<T> encode(HolderSet<E> holderSet, DynamicOps<T> ops, T prefix) {
-        if (holderSet instanceof LateHolderSet<E> late)
+        if (holderSet instanceof LateHolderSetImpl<E> late)
             return DataResult.success(late.encode(ops, prefix));
         if (holderSet instanceof HolderSet.Named<E> named)
             return DataResult.success(ops.createString("#" + named.key().location()));

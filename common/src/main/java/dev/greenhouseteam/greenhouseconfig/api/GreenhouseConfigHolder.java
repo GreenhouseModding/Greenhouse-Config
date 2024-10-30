@@ -5,6 +5,7 @@ import com.mojang.serialization.Codec;
 
 import dev.greenhouseteam.greenhouseconfig.api.lang.ConfigLang;
 import dev.greenhouseteam.greenhouseconfig.api.lang.jsonc.JsonCLang;
+import dev.greenhouseteam.greenhouseconfig.api.util.Late;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfig;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigStorage;
 import dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigHolderRegistry;
@@ -17,6 +18,7 @@ import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -62,8 +64,8 @@ public interface GreenhouseConfigHolder<T> {
      *
      * @param value The config value.
      */
-    default void createConfig(T value) {
-        GreenhouseConfigStorage.createConfig(this, value);
+    default void saveOrCreateConfig(T value) {
+        GreenhouseConfigStorage.saveOrCreateConfig(this, value);
     }
 
     /**
@@ -110,7 +112,10 @@ public interface GreenhouseConfigHolder<T> {
         private Codec<T> serverCodec;
         private Codec<T> clientCodec;
         private Function<T, StreamCodec<FriendlyByteBuf, T>> networkCodecFunction;
+        private BiConsumer<HolderLookup.Provider, T> latePopulationCallback;
         private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
+        private Consumer<T> lateDepopulationCallback;
+        private Consumer<T> postRegistryDepopulationCallback;
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsServer = ImmutableMap.builder();
         private final Set<Integer> backwardsCompatClientVersions = new HashSet<>();
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsClient = ImmutableMap.builder();
@@ -268,13 +273,36 @@ public interface GreenhouseConfigHolder<T> {
 
         /**
          * A callback that runs after registries have been populated.
-         * Mostly used for binding values
          *
          * @param callback A callback that runs on registry values and the config.
-         * @see dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet
          */
         public Builder<T> postRegistryPopulation(BiConsumer<HolderLookup.Provider, T> callback) {
             postRegistryPopulationCallback = callback;
+            return this;
+        }
+
+        /**
+         * A callback that runs after registries have had their values removed.
+         * <br>
+         * This typically happens after a client leaves the game.
+         *
+         * @param callback A callback that runs on the config.
+         */
+        public Builder<T> postRegistryDepopulation(Consumer<T> callback) {
+            postRegistryDepopulationCallback = callback;
+            return this;
+        }
+
+        /**
+         * A shortcut to {@link GreenhouseConfigHolder.Builder#postRegistryPopulation(BiConsumer)} and {@link GreenhouseConfigHolder.Builder#postRegistryDepopulation(Consumer)} that binds/unbinds the late values of this config.
+         *
+         * @param function A function with the config that should return all late values from your config.
+         * @see dev.greenhouseteam.greenhouseconfig.api.util.LateHolder
+         * @see dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet
+         */
+        public Builder<T> lateValues(Function<T, List<? extends Late>> function, Consumer<String> onException) {
+            latePopulationCallback = (lookup, config) -> function.apply(config).forEach(late -> late.bind(lookup, onException));
+            lateDepopulationCallback = (config) -> function.apply(config).forEach(Late::unbind);
             return this;
         }
 
@@ -292,7 +320,10 @@ public interface GreenhouseConfigHolder<T> {
             if (defaultServerValue == null && defaultClientValue == null)
                 throw new UnsupportedOperationException("Attempted to build config without a default value.");
 
-            GreenhouseConfigHolderImpl<?, T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, configLang, defaultServerValue, defaultClientValue, serverCodec, clientCodec, networkCodecFunction, postRegistryPopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
+            BiConsumer<HolderLookup.Provider, T> populationCallback = latePopulationCallback != null && postRegistryPopulationCallback != null ? latePopulationCallback.andThen(postRegistryPopulationCallback) : latePopulationCallback != null ? latePopulationCallback : postRegistryPopulationCallback;
+            Consumer<T> depopulationCallback = lateDepopulationCallback != null && postRegistryDepopulationCallback != null ? lateDepopulationCallback.andThen(postRegistryDepopulationCallback) : lateDepopulationCallback != null ? lateDepopulationCallback : postRegistryDepopulationCallback;
+
+            GreenhouseConfigHolderImpl<?, T> config = new GreenhouseConfigHolderImpl<>(configName, schemaVersion, configLang, defaultServerValue, defaultClientValue, serverCodec, clientCodec, networkCodecFunction, populationCallback, depopulationCallback, backwardsCompatCodecsServer.buildKeepingLast(), backwardsCompatCodecsClient.buildKeepingLast());
 
             if (serverCodec != null)
                 GreenhouseConfigHolderRegistry.registerServerConfig(configName, config);

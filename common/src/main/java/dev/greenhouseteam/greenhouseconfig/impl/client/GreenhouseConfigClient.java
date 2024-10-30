@@ -11,4 +11,8 @@ public class GreenhouseConfigClient {
     public static void onWorldJoin(HolderLookup.Provider registries) {
         GreenhouseConfigStorage.onRegistryPopulation(registries);
     }
+
+    public static void onWorldLeave() {
+        GreenhouseConfigStorage.onRegistryDepopulation();
+    }
 }

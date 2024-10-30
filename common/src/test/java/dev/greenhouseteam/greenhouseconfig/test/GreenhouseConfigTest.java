@@ -5,14 +5,11 @@ import com.mojang.brigadier.tree.LiteralCommandNode;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigHolder;
 import dev.greenhouseteam.greenhouseconfig.api.GreenhouseConfigSide;
 import dev.greenhouseteam.greenhouseconfig.api.command.GreenhouseConfigReloadCommandMethods;
-import dev.greenhouseteam.greenhouseconfig.api.util.LateHolderSet;
 import dev.greenhouseteam.greenhouseconfig.test.command.TestCommand;
 import dev.greenhouseteam.greenhouseconfig.test.config.SplitConfig;
 import dev.greenhouseteam.greenhouseconfig.test.config.TestConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
-import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,18 +26,7 @@ public class GreenhouseConfigTest {
             .schemaVersion(2)
             .common(TestConfig.CODEC, TestConfig.DEFAULT)
             .networkSerializable(TestConfig.STREAM_CODEC)
-            .postRegistryPopulation((provider, testConfig) -> {
-                LateHolderSet.bind(
-                        BuiltInRegistries.BLOCK.asLookup(),
-                        testConfig.redBlocks(),
-                        s -> LOG.error("Error while parsing \"red_blocks\" in config/greenhouseconfig_test.jsonc: {}", s)
-                );
-                LateHolderSet.bind(
-                        provider.lookupOrThrow(Registries.BIOME),
-                        testConfig.greenBiomes(),
-                        s -> LOG.error("Error while parsing \"green_biomes\" in config/greenhouseconfig_test.jsonc: {}", s)
-                );
-            })
+            .lateValues(TestConfig::getLateValues, s -> LOG.error("Error handling config/greenhouseconfig_test.jsonc: {}", s))
             .backwardsCompatCommon(1, TestConfig.CompatCodecs.V1)
             .buildAndRegister();
 
@@ -119,6 +105,7 @@ public class GreenhouseConfigTest {
         if (holder == GreenhouseConfigTest.CONFIG && config instanceof TestConfig testConfig) {
             GreenhouseConfigTest.LOG.info("Main Config Values...");
             GreenhouseConfigTest.LOG.info("Silly: {}", testConfig.silly());
+            GreenhouseConfigTest.LOG.info(testConfig.favoriteEnchantment().toString());
             GreenhouseConfigTest.LOG.info(testConfig.redBlocks().toString());
             GreenhouseConfigTest.LOG.info(testConfig.greenBiomes().toString());
         }
@@ -140,7 +127,7 @@ public class GreenhouseConfigTest {
     }
 
     public static ResourceLocation asResource(String path) {
-        return ResourceLocation.tryBuild(MOD_ID, path);
+        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
     }
 
 }

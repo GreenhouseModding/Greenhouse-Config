@@ -17,5 +17,8 @@ public class GreenhouseConfigFabricClient implements ClientModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) ->
                 GreenhouseConfigClient.onWorldJoin(client.level.registryAccess())
         );
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) ->
+                GreenhouseConfigClient.onWorldLeave()
+        );
     }
 }
