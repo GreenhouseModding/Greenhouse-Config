@@ -5,7 +5,8 @@ Greenhouse Config is a config library for Fabric and NeoForge made for mostly my
 - A config system based on Mojang's Codec system but adapted to utilise commented config file formats like jsonc.
 - A simple config builder that will handle the heavywork for you.
 - Config syncing between servers and clients, without changing the client's individual values.
-- LateHolderSet, a HolderSet/RegistryEntryList that can be resolved after datapack registries, but can be loaded before then.
+- LateHolder(Set), a Holder/RegistryEntry or HolderSet/RegistryEntryList that are resolved after datapack registries are populated, but can be loaded before then.
+- Backwards compatibility codecs, allowing you to transfer an old schema to a new schema.
 
 ## Usage
 To learn how to use Greenhouse Config, go to the [Getting Started](https://github.com/GreenhouseTeam/greenhouse-config/wiki/Getting-Started-%E2%80%90-1.x.x) page.
@@ -19,7 +20,7 @@ Greenhouse Config is on the Greenhouse Team Maven, to get the mod in your enviro
 repositories {
     maven {
         name = "Greenhouse Maven"
-        url = "https://maven.greenhouseteam.dev/releases/"
+        url = "https://repo.greenhouse.house/releases/"
     }
 }
 
