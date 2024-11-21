@@ -27,8 +27,6 @@ dependencies {
     modImplementation("net.fabricmc:fabric-loader:${Versions.FABRIC_LOADER}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${Versions.FABRIC_API}")
     modLocalRuntime("com.terraformersmc:modmenu:${Versions.MOD_MENU}")
-
-    modImplementation("com.kneelawk.common-events:common-events-fabric:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")?.let { include(it) }
 }
 
 loom {

@@ -34,8 +34,6 @@ dependencies {
     compileOnly("io.github.llamalad7:mixinextras-common:${Versions.MIXIN_EXTRAS}")
     annotationProcessor("io.github.llamalad7:mixinextras-common:${Versions.MIXIN_EXTRAS}")
     compileOnly("net.fabricmc:sponge-mixin:${Versions.FABRIC_MIXIN}")
-
-    compileOnly("com.kneelawk.common-events:common-events-xplat-mojmap:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")
 }
 
 configurations {

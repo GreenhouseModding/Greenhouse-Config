@@ -52,10 +52,6 @@ neoForge {
     }
 }
 
-dependencies {
-    jarJar("com.kneelawk.common-events:common-events-neoforge:${Versions.COMMON_EVENTS}+${Versions.MINECRAFT}")
-}
-
 tasks {
     named<ProcessResources>("processResources").configure {
         filesMatching("*.mixins.json") {
