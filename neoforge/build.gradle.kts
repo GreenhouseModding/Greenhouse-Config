@@ -5,6 +5,7 @@ import org.apache.tools.ant.filters.LineContains
 plugins {
     id("greenhouseconfig.loader")
     id("net.neoforged.moddev")
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 neoForge {
@@ -59,5 +60,13 @@ tasks {
         filesMatching("*.mixins.json") {
             filter<LineContains>("negate" to true, "contains" to setOf("refmap"))
         }
+    }
+}
+
+publishMods {
+    file.set(tasks.named<Jar>("jar").get().archiveFile)
+    github {
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        parent(project(":common").tasks.named("publishGithub"))
     }
 }

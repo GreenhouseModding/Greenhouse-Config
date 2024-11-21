@@ -3,7 +3,8 @@ import dev.greenhouseteam.greenhouseconfig.gradle.Versions
 
 plugins {
     id("greenhouseconfig.loader")
-    id("fabric-loom") version "1.6-SNAPSHOT"
+    id("fabric-loom")
+    id("me.modmuss50.mod-publish-plugin")
 }
 
 repositories {
@@ -62,5 +63,13 @@ loom {
             ideConfigGenerated(true)
             vmArgs("-Dmixin.debug.verbose=true", "-Dmixin.debug.export=true")
         }
+    }
+}
+
+publishMods {
+    file.set(tasks.named<Jar>("remapJar").get().archiveFile)
+    github {
+        accessToken = providers.environmentVariable("GITHUB_TOKEN")
+        parent(project(":common").tasks.named("publishGithub"))
     }
 }
