@@ -1,5 +1,5 @@
-import dev.greenhouseteam.greenhouseconfig.gradle.Properties
-import dev.greenhouseteam.greenhouseconfig.gradle.Versions
+import house.greenhouse.greenhouseconfig.gradle.Properties
+import house.greenhouse.greenhouseconfig.gradle.Versions
 import org.apache.tools.ant.filters.LineContains
 import org.gradle.jvm.tasks.Jar
 

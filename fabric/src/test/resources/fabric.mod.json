@@ -19,10 +19,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTestFabric"
+      "house.greenhouse.greenhouseconfig.test.GreenhouseConfigTestFabric"
     ],
     "client": [
-      "dev.greenhouseteam.greenhouseconfig.test.client.GreenhouseConfigTestFabricClient"
+      "house.greenhouse.greenhouseconfig.test.client.GreenhouseConfigTestFabricClient"
     ]
   },
   "depends": {

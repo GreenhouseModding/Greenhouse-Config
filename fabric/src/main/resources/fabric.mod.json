@@ -20,10 +20,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-      "dev.greenhouseteam.greenhouseconfig.impl.GreenhouseConfigFabric"
+      "house.greenhouse.greenhouseconfig.impl.GreenhouseConfigFabric"
     ],
     "client": [
-      "dev.greenhouseteam.greenhouseconfig.impl.client.GreenhouseConfigFabricClient"
+      "house.greenhouse.greenhouseconfig.impl.client.GreenhouseConfigFabricClient"
     ]
   },
   "accessWidener": "greenhouseconfig.accesswidener",

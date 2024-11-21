@@ -1,4 +1,4 @@
-import dev.greenhouseteam.greenhouseconfig.gradle.Properties
+import house.greenhouse.greenhouseconfig.gradle.Properties
 
 plugins {
     id("greenhouseconfig.common")
