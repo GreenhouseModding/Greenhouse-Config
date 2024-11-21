@@ -28,22 +28,22 @@ repositories {
 
 dependencies {
     // Depend on the Common project, for VanillaGradle and ModDevGradle.
-    compileOnly("dev.greenhouseteam:greenhouseconfig-common-mojmap:${ghc_version}+${minecraft_version}")
+    compileOnly("house.greenhouse:greenhouseconfig:${ghc_version}+${minecraft_version}-common-mojmap")
 
     // Depend on the Common project, for Loom.
-    modCompileOnly("dev.greenhouseteam:greenhouseconfig-common-intermediary:${ghc_version}+${minecraft_version}")
+    modCompileOnly("dev.greenhouseteam:greenhouseconfig:${ghc_version}+${minecraft_version}-common-intermediary")
 
     // Depend on the Fabric project, for Loom.
-    modImplementation(include("dev.greenhouseteam:greenhouseconfig-fabric:${ghc_version}+${minecraft_version}"))
-    
-    // Depend on the NeoForge project, for NeoGradle.
-    jarJar(implementation("dev.greenhouseteam:greenhouseconfig-neoforge:[${ghc_version}+${minecraft_version},)")) {
-        version {
-            prefer "${ghc_version}+${minecraft_version}"
-        }
-    }
+    modImplementation(include("house.greenhouse:greenhouseconfig:${ghc_version}+${minecraft_version}-fabric"))
     
     // Depend on the NeoForge project, for ModDevGradle.
-    jarJar("dev.greenhouseteam:greenhouseconfig-neoforge:${ghc_version}+${minecraft_version}")
+    jarJar("house.greenhouse:greenhouse-config:${ghc_version}+${minecraft_version}-neoforge")
+    
+    // Depend on the NeoForge project, for NeoGradle.
+    jarJar(implementation("house.greenhouse:greenhouseconfig:[${ghc_version}+${minecraft_version},)")) {
+        version {
+            prefer "${ghc_version}+${minecraft_version}-neoforge"
+        }
+    }
 }
 ```

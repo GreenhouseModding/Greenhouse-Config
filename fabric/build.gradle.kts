@@ -1,5 +1,6 @@
 import house.greenhouse.greenhouseconfig.gradle.Properties
 import house.greenhouse.greenhouseconfig.gradle.Versions
+import net.fabricmc.loom.task.RemapJarTask
 import org.gradle.jvm.tasks.Jar
 
 plugins {
@@ -70,5 +71,64 @@ publishMods {
         file.set(tasks.named<Jar>("remapJar").get().archiveFile)
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
         parent(project(":common").tasks.named("publishGithub"))
+    }
+}
+
+tasks.register<RemapJarTask>("remapCommon") {
+    dependsOn(project(":common").tasks.jar)
+    inputFile.set(project(":common").tasks.jar.get().archiveFile)
+
+    archiveVersion.set("${Versions.MOD}+${Versions.MINECRAFT}-common-intermediary")
+}
+
+tasks.register<RemapJarTask>("remapCommonSources") {
+    dependsOn(project(":common").tasks.sourcesJar)
+    inputFile.set(project(":common").tasks.sourcesJar.get().archiveFile)
+
+    archiveClassifier.set("sources")
+    archiveVersion.set("${Versions.MOD}+${Versions.MINECRAFT}-common-intermediary")
+}
+
+tasks.register<RemapJarTask>("remapCommonJavadoc") {
+    dependsOn(project(":common").tasks.javadocJar)
+    inputFile.set(project(":common").tasks.javadocJar.get().archiveFile)
+
+    archiveClassifier.set("javadoc")
+    archiveVersion.set("${Versions.MOD}+${Versions.MINECRAFT}-common-intermediary")
+}
+
+tasks.getByName("assemble").dependsOn("remapCommon", "remapCommonSources", "remapCommonJavadoc")
+
+publishing {
+    publications {
+        create<MavenPublication>("mavenIntermediary") {
+            artifactId = Properties.MOD_ID
+            version = "${Versions.MOD}+${Versions.MINECRAFT}-common-intermediary"
+            artifact(tasks["remapCommon"]) {
+                builtBy(tasks["remapCommon"])
+                classifier = ""
+            }
+            artifact(tasks["remapCommonSources"]) {
+                builtBy(tasks["remapCommonSources"])
+                classifier = "sources"
+            }
+            artifact(tasks["remapCommonJavadoc"]) {
+                builtBy(tasks["remapCommonJavadoc"])
+                classifier = "javadoc"
+            }
+        }
+    }
+    repositories {
+        maven {
+            name = "Greenhouse"
+            url = uri("https://repo.greenhouse.house/snapshots")
+            credentials {
+                username = System.getenv("MAVEN_USERNAME")
+                password = System.getenv("MAVEN_PASSWORD")
+            }
+            authentication {
+                create<BasicAuthentication>("basic")
+            }
+        }
     }
 }

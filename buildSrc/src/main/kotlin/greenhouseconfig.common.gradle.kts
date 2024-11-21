@@ -8,9 +8,9 @@ plugins {
     `maven-publish`
 }
 
-base.archivesName.set(Properties.MOD_ID + "-" + project.name)
+base.archivesName.set(Properties.MOD_ID)
 group = Properties.GROUP
-version = "${Versions.MOD}+${Versions.MINECRAFT}"
+version = "${Versions.MOD}+${Versions.MINECRAFT}-${project.name}"
 
 java {
     toolchain.languageVersion.set(JavaLanguageVersion.of(Versions.JAVA))
@@ -115,7 +115,6 @@ tasks {
 publishing {
     publications {
         create<MavenPublication>("mavenJava") {
-            artifactId = base.archivesName.get()
             from(components["java"])
         }
     }

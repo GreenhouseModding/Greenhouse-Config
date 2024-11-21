@@ -6,8 +6,7 @@ plugins {
     id("net.neoforged.moddev")
     id("me.modmuss50.mod-publish-plugin")
 }
-
-base.archivesName.set(Properties.MOD_ID + "-" + project.name + "-mojmap")
+version = "${Versions.MOD}+${Versions.MINECRAFT}-common-mojmap"
 
 sourceSets {
     create("generated") {
