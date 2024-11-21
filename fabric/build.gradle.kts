@@ -67,8 +67,8 @@ loom {
 }
 
 publishMods {
-    file.set(tasks.named<Jar>("remapJar").get().archiveFile)
     github {
+        file.set(tasks.named<Jar>("remapJar").get().archiveFile)
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
         parent(project(":common").tasks.named("publishGithub"))
     }
