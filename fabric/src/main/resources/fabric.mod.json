@@ -35,6 +35,7 @@
   },
   "custom": {
     "modmenu": {
+      "badges": [ "library" ],
       "links": {
         "modmenu.github_releases": "https://github.com/${sources}/releases"
       }
