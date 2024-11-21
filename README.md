@@ -1,7 +1,7 @@
 # Greenhouse Config
 Greenhouse Config is a config library for Fabric and NeoForge made for mostly myself (MerchantPug), however, any developer is free to utilise it and provide feedback for it.
 
-Please note that it is currently in alpha.
+Please note that Greenhouse Config is currently in alpha, and code may be subject to change.
 
 ## Features
 - A config system based on Mojang's Codec system but adapted to utilise commented config file formats like jsonc.
