@@ -8,6 +8,7 @@ object Versions {
     const val NEOFORM = "$MINECRAFT-20240613.152323"
     const val PARCHMENT = "2024.06.23"
 
+    // TODO: Implement Common Events.
     const val COMMON_EVENTS = "1.0.0"
 
     const val FABRIC_API = "0.108.0+1.21.1"
