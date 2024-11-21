@@ -1,7 +1,7 @@
 package house.greenhouse.greenhouseconfig.gradle
 
 object Properties {
-    const val GROUP = "dev.greenhouseteam"
+    const val GROUP = "house.greenhouse"
     const val MOD_NAME = "Greenhouse Config"
     const val MOD_ID = "greenhouseconfig"
     const val MOD_AUTHOR = "Greenhouse Team"

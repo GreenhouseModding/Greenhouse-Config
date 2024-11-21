@@ -116,6 +116,7 @@ publishing {
     publications {
         create<MavenPublication>("mavenJava") {
             from(components["java"])
+            artifactId = Properties.MOD_ID
         }
     }
     repositories {

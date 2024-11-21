@@ -118,17 +118,4 @@ publishing {
             }
         }
     }
-    repositories {
-        maven {
-            name = "Greenhouse"
-            url = uri("https://repo.greenhouse.house/snapshots")
-            credentials {
-                username = System.getenv("MAVEN_USERNAME")
-                password = System.getenv("MAVEN_PASSWORD")
-            }
-            authentication {
-                create<BasicAuthentication>("basic")
-            }
-        }
-    }
 }
