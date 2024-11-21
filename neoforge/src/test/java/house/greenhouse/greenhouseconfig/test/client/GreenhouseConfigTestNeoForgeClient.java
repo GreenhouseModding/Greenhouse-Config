@@ -1,6 +1,6 @@
 package house.greenhouse.greenhouseconfig.test.client;
 
-import dev.greenhouseteam.greenhouseconfig.test.GreenhouseConfigTest;
+import house.greenhouse.greenhouseconfig.test.GreenhouseConfigTest;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
