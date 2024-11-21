@@ -1,6 +1,7 @@
 import dev.greenhouseteam.greenhouseconfig.gradle.Properties
 import dev.greenhouseteam.greenhouseconfig.gradle.Versions
 import org.apache.tools.ant.filters.LineContains
+import org.gradle.jvm.tasks.Jar
 
 plugins {
     id("greenhouseconfig.loader")

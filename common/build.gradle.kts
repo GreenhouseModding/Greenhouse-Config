@@ -72,7 +72,7 @@ publishMods {
 
     github {
         accessToken = providers.environmentVariable("GITHUB_TOKEN")
-        repository = Properties.GITHUB_REPO
+        repository = "https://github.com/${Properties.GITHUB_COMMITISH}"
         tagName = "${Versions.MOD}+${Versions.MINECRAFT}"
         commitish = Properties.GITHUB_COMMITISH
 

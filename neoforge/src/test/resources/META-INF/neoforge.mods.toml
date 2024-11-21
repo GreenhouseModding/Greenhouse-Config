@@ -7,8 +7,8 @@ issueTrackerURL="https://github.com/GreenhouseTeam/greenhouse-config/issues"
 modId = "${mod_id}_test"
 version = "${mod_version}+${minecraft_version}"
 displayName = "${mod_name} Test"
-displayURL="https://github.com/GreenhouseTeam/greenhouse-config"
-credits="${mod_contributors}"
+displayURL="${homepage}"
+credits="${neoforge_mod_contributors}"
 authors = "${mod_author}"
 description = '''${mod_description}'''
 
