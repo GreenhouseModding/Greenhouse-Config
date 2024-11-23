@@ -1,7 +1,6 @@
 package house.greenhouse.greenhouseconfig.test.client.screen.widget;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
-import com.mojang.serialization.DataResult;
 import house.greenhouse.greenhouseconfig.test.GreenhouseConfigTest;
 import house.greenhouse.greenhouseconfig.test.client.util.ColorUtil;
 import house.greenhouse.greenhouseconfig.test.client.util.MouseUtil;
@@ -9,6 +8,7 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.AbstractButton;
 import net.minecraft.client.gui.components.EditBox;
+import net.minecraft.client.gui.components.WidgetSprites;
 import net.minecraft.client.gui.narration.NarratedElementType;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.renderer.RenderType;
@@ -22,6 +22,7 @@ import org.joml.Matrix4f;
 
 public class ColorWidget extends AbstractColorWidget {
     private static final ResourceLocation SELECTOR = GreenhouseConfigTest.asResource("config/selector");
+    private static final WidgetSprites DEFAULT_BUTTON = new WidgetSprites(GreenhouseConfigTest.asResource("config/default"), GreenhouseConfigTest.asResource("config/default_disabled"), GreenhouseConfigTest.asResource("config/default"));
 
     private int maxHV;
     private int maxHS;
@@ -38,7 +39,7 @@ public class ColorWidget extends AbstractColorWidget {
 
     public ColorWidget(int x, int y, TextColor color, TextColor defaultColor) {
         super(x, y, 122, 45, Component.literal("Color Input"));
-        defaultButton = new AbstractButton(x + 84, y, 40, 12, Component.literal("Default")) {
+        defaultButton = new AbstractButton(x + 110, y, 12, 12, Component.literal("")) {
             @Override
             public void onPress() {
                 setColor(defaultColor);
@@ -47,14 +48,26 @@ public class ColorWidget extends AbstractColorWidget {
             }
 
             @Override
+            protected void renderWidget(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+                super.renderWidget(graphics, mouseX, mouseY, partialTick);
+                graphics.blitSprite(DEFAULT_BUTTON.get(active, isHoveredOrFocused()), getX(), getY(), 12, 12);
+                if (isHovered() && !isServerControlled())
+                    graphics.renderTooltip(Minecraft.getInstance().font, Component.literal("Reset to Default"), mouseX, mouseY);
+            }
+
+            @Override
             protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
-                narrationElementOutput.add(NarratedElementType.POSITION, Component.literal("Default Color"));
+                narrationElementOutput.add(NarratedElementType.POSITION, Component.literal("Reset to Default Color"));
             }
         };
-        textBox = new EditBox(Minecraft.getInstance().font, getX() + 14, getY(), 66, 12, Component.literal(color.serialize()));
+        textBox = new EditBox(Minecraft.getInstance().font, getX() + 15, getY(), 92, 12, Component.literal(color.serialize()));
         textBox.setFilter(s1 -> {
             var chars = s1.toCharArray();
-            if (chars.length < 1 || chars.length > 7)
+            if (chars.length < 1) {
+                textBox.setValue("#");
+                return false;
+            }
+            if (chars.length > 7)
                 return false;
             for (int i = 0; i < chars.length; ++i) {
                 if (i == 0 && chars[i] != '#')
@@ -70,9 +83,8 @@ public class ColorWidget extends AbstractColorWidget {
                 setDirty(true);
             }
         });
-        textBox.active = !isServerControlled();
         this.defaultColor = defaultColor;
-        defaultButton.active = !isServerControlled() && !color.equals(defaultColor);
+        defaultButton.active = !color.equals(defaultColor);
         setColor(color);
         textBox.setValue(color.serialize());
     }
@@ -81,7 +93,7 @@ public class ColorWidget extends AbstractColorWidget {
     public void setX(int x) {
         super.setX(x);
         textBox.setX(x + 15);
-        defaultButton.setX(x + 82);
+        defaultButton.setX(x + 110);
     }
 
     @Override
@@ -112,23 +124,23 @@ public class ColorWidget extends AbstractColorWidget {
 
     @Override
     protected boolean clicked(double mouseX, double mouseY) {
-        return MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 16, 120, 8) ||
-                MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 25, 120, 8) ||
-                MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 34, 120, 8);
+        return MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 14, 120, 8) ||
+                MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 23, 120, 8) ||
+                MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 32, 120, 8);
     }
 
     @Override
     public void onClick(double mouseX, double mouseY) {
         resetActive = false;
-        if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 16, 120, 8)) {
+        if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 14, 120, 8)) {
             setFocused(true);
             currentSlider = h;
             currentlyActive = Type.HUE;
-        } else if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 25, 120, 8)) {
+        } else if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 23, 120, 8)) {
             setFocused(true);
             currentSlider = s;
             currentlyActive = Type.SATURATION;
-        } else if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 34, 120, 8)) {
+        } else if (MouseUtil.inBounds(mouseX, mouseY, getX() + 2, getY() + 32, 120, 8)) {
             setFocused(true);
             currentSlider = v;
             currentlyActive = Type.VALUE;
@@ -183,13 +195,13 @@ public class ColorWidget extends AbstractColorWidget {
         textBox.renderWidget(graphics, mouseX, mouseY, partialTick);
         defaultButton.render(graphics, mouseX, mouseY, partialTick);
 
-        renderHBackground(graphics, getX(), getY() + 16);
-        renderSBBackground(graphics, getX(), getY() + 25, FastColor.ARGB32.colorFromFloat(1.0F, v, v, v), maxHV);
-        renderSBBackground(graphics, getX(), getY() + 34, 0xFF000000, maxHS);
+        renderHBackground(graphics, getX(), getY() + 14);
+        renderSBBackground(graphics, getX(), getY() + 23, FastColor.ARGB32.colorFromFloat(1.0F, v, v, v), maxHV);
+        renderSBBackground(graphics, getX(), getY() + 32, 0xFF000000, maxHS);
 
-        renderSlider(graphics, getX(), getY() + 16, h);
-        renderSlider(graphics, getX(), getY() + 25, s);
-        renderSlider(graphics, getX(), getY() + 34, v);
+        renderSlider(graphics, getX(), getY() + 14, h);
+        renderSlider(graphics, getX(), getY() + 23, s);
+        renderSlider(graphics, getX(), getY() + 32, v);
 
         if (MouseUtil.inBounds(mouseX, mouseY, getX(), getY(), 122, 45) && isServerControlled())
             graphics.renderTooltip(Minecraft.getInstance().font, Component.literal("This value is controlled by the server."), mouseX, mouseY);
@@ -213,6 +225,8 @@ public class ColorWidget extends AbstractColorWidget {
     public void setServerControlled(boolean serverControlled) {
         super.setServerControlled(serverControlled);
         defaultButton.active = !serverControlled;
+        textBox.active = !serverControlled;
+        textBox.setEditable(!serverControlled);
     }
 
     private void renderColorBox(GuiGraphics graphics, int startX, int startY) {
@@ -233,9 +247,6 @@ public class ColorWidget extends AbstractColorWidget {
         int colorValue = FastColor.ARGB32.color(255, color.getValue());
         if (isServerControlled())
             colorValue = FastColor.ARGB32.color((int) (FastColor.ARGB32.red(colorValue) * 0.4), (int) (FastColor.ARGB32.green(colorValue) * 0.4), (int) (FastColor.ARGB32.blue(colorValue) * 0.4));
-
-        if (textBox.getValue().length() < 7)
-            colorValue = -1;
 
         graphics.fill(startX, startY, endX, endY, 10, colorValue);
     }
@@ -358,6 +369,16 @@ public class ColorWidget extends AbstractColorWidget {
     @Override
     protected void updateWidgetNarration(NarrationElementOutput narrationElementOutput) {
         narrationElementOutput.add(NarratedElementType.TITLE, this.getMessage());
+        if (textBox.canConsumeInput())
+            textBox.updateWidgetNarration(narrationElementOutput);
+        else if (defaultButton.isHovered())
+            textBox.updateWidgetNarration(narrationElementOutput);
+        else if (currentlyActive == Type.HUE)
+            narrationElementOutput.add(NarratedElementType.TITLE, "Update Hue to " + h);
+        else if (currentlyActive == Type.SATURATION)
+            narrationElementOutput.add(NarratedElementType.TITLE, "Update Saturation to " + s);
+        else if (currentlyActive == Type.VALUE)
+            narrationElementOutput.add(NarratedElementType.TITLE, "Update Value to " + s);
     }
 
     private enum Type {
