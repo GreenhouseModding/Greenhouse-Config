@@ -16,6 +16,7 @@
     "sources": "https://github.com/${sources}"
   },
   "license": "${mod_license}",
+  "icon": "${mod_id}_test.png",
   "environment": "*",
   "entrypoints": {
     "main": [
@@ -23,6 +24,9 @@
     ],
     "client": [
       "house.greenhouse.greenhouseconfig.test.client.GreenhouseConfigTestFabricClient"
+    ],
+    "modmenu": [
+      "house.greenhouse.greenhouseconfig.test.client.integration.modmenu.GreenhouseConfigTestModMenuEntrypoint"
     ]
   },
   "depends": {

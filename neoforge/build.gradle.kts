@@ -30,12 +30,14 @@ neoForge {
         }
         create("client") {
             client()
+            ideName = "NeoForge Client (:${project.name})"
             gameDirectory.set(file("runs/client"))
             sourceSet = sourceSets["test"]
             jvmArguments.set(setOf("-Dmixin.debug.verbose=true", "-Dmixin.debug.export=true"))
         }
         create("server") {
             server()
+            ideName = "NeoForge Server (:${project.name})"
             gameDirectory.set(file("runs/server"))
             programArgument("--nogui")
             sourceSet = sourceSets["test"]

@@ -51,8 +51,8 @@ public class GreenhouseConfigReloadCommandMethods {
         if (config == null)
             return 0;
 
-        if (!holder.queryConfig())
-            GreenhouseConfigStorage.individualRegistryPopulation(Minecraft.getInstance().level.registryAccess(), holder, config);
+        holder.queryConfig();
+        GreenhouseConfigStorage.individualRegistryPopulation(Minecraft.getInstance().level.registryAccess(), holder, config);
         GreenhouseConfig.getPlatform().sendSuccessClient(context, Component.translatableWithFallback("command.greenhouseconfig.reload.success", "Successfully reloading config '" + holder.getConfigFileName() + "'.", holder.getConfigFileName()));
         return 1;
     }

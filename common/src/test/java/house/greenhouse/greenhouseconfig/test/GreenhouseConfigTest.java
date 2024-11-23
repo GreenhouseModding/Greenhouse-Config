@@ -6,7 +6,6 @@ import house.greenhouse.greenhouseconfig.api.GreenhouseConfigHolder;
 import house.greenhouse.greenhouseconfig.api.GreenhouseConfigSide;
 import house.greenhouse.greenhouseconfig.api.command.GreenhouseConfigReloadCommandMethods;
 import house.greenhouse.greenhouseconfig.test.command.TestCommand;
-import house.greenhouse.greenhouseconfig.test.config.SplitConfig;
 import house.greenhouse.greenhouseconfig.test.config.TestConfig;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
@@ -19,32 +18,13 @@ public class GreenhouseConfigTest {
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
     public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
-            /*
-            .configVersion(1)
-            .commonCodec(TestConfig.CompatCodecs.V1, TestConfig.DEFAULT)
-            */
-            .schemaVersion(2)
-            .common(TestConfig.CODEC, TestConfig.DEFAULT)
-            .networkSerializable(TestConfig.STREAM_CODEC)
+            .schemaVersion(3)
+            .server(TestConfig.CODEC, TestConfig.DEFAULT)
+            .client(TestConfig.CODEC, TestConfig.DEFAULT)
+            .networkSerializable(TestConfig::streamCodec)
             .lateValues(TestConfig::getLateValues, s -> LOG.error("Error handling config/greenhouseconfig_test.jsonc: {}", s))
-            .backwardsCompatCommon(1, TestConfig.CompatCodecs.V1)
-            .buildAndRegister();
-
-    public static final GreenhouseConfigHolder<SplitConfig> SPLIT = new GreenhouseConfigHolder.Builder<SplitConfig>(MOD_ID + "/split")
-            .schemaVersion(1)
-            .server(SplitConfig.SERVER_CODEC, SplitConfig.DEFAULT)
-            .client(SplitConfig.CLIENT_CODEC, SplitConfig.DEFAULT)
-            .networkSerializable(SplitConfig::streamCodec)
-            .buildAndRegister();
-
-    public static final GreenhouseConfigHolder<SplitConfig> SERVER = new GreenhouseConfigHolder.Builder<SplitConfig>(MOD_ID + "/server")
-            .schemaVersion(1)
-            .server(SplitConfig.SERVER_CODEC, SplitConfig.DEFAULT)
-            .buildAndRegister();
-
-    public static final GreenhouseConfigHolder<SplitConfig> CLIENT = new GreenhouseConfigHolder.Builder<SplitConfig>(MOD_ID + "/client")
-            .schemaVersion(1)
-            .client(SplitConfig.CLIENT_CODEC, SplitConfig.DEFAULT)
+            .backwardsCompat(1, TestConfig.CompatCodecs.V1)
+            .backwardsCompat(2, TestConfig.CompatCodecs.V2)
             .buildAndRegister();
 
     public static void init() {
@@ -57,43 +37,13 @@ public class GreenhouseConfigTest {
 
         LiteralCommandNode<CommandSourceStack> reloadNode = Commands
                 .literal("reload")
-                .build();
-
-        LiteralCommandNode<CommandSourceStack> reloadMainNode = Commands
-                .literal("main")
                 .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfig(context, CONFIG))
-                .build();
-
-        LiteralCommandNode<CommandSourceStack> reloadSplitServerNode = Commands
-                .literal("split")
-                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfig(context, SPLIT))
-                .build();
-
-        LiteralCommandNode<CommandSourceStack> reloadServerNode = Commands
-                .literal("server")
-                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfig(context, SERVER))
                 .build();
 
         LiteralCommandNode<CommandSourceStack> colorNode = Commands
                 .literal("color")
+                .executes(context -> TestCommand.printServerText(context, CONFIG))
                 .build();
-
-        LiteralCommandNode<CommandSourceStack> colorSplitServerNode = Commands
-                .literal("split")
-                .executes(context -> TestCommand.printServerText(context, SPLIT))
-                .build();
-
-        LiteralCommandNode<CommandSourceStack> colorServerNode = Commands
-                .literal("server")
-                .executes(context -> TestCommand.printServerText(context, SERVER))
-                .build();
-
-        reloadNode.addChild(reloadMainNode);
-        reloadNode.addChild(reloadSplitServerNode);
-        reloadNode.addChild(reloadServerNode);
-
-        colorNode.addChild(colorSplitServerNode);
-        colorNode.addChild(colorServerNode);
 
         ghTestNode.addChild(reloadNode);
         ghTestNode.addChild(colorNode);
@@ -108,21 +58,10 @@ public class GreenhouseConfigTest {
             GreenhouseConfigTest.LOG.info(testConfig.favoriteEnchantment().toString());
             GreenhouseConfigTest.LOG.info(testConfig.redBlocks().toString());
             GreenhouseConfigTest.LOG.info(testConfig.greenBiomes().toString());
-        }
-        if (holder == GreenhouseConfigTest.SPLIT && config instanceof SplitConfig splitConfig) {
             GreenhouseConfigTest.LOG.info("Split Config Values...");
-            GreenhouseConfigTest.LOG.info(splitConfig.color().serialize());
+            GreenhouseConfigTest.LOG.info(testConfig.color().serialize());
             if (side == GreenhouseConfigSide.CLIENT)
-                GreenhouseConfigTest.LOG.info(splitConfig.clientValues().color().serialize());
-        }
-        if (holder == GreenhouseConfigTest.SERVER && config instanceof SplitConfig splitConfig) {
-            GreenhouseConfigTest.LOG.info("Server Config Values...");
-            GreenhouseConfigTest.LOG.info(splitConfig.color().serialize());
-        }
-        if (holder == GreenhouseConfigTest.CLIENT && config instanceof SplitConfig splitConfig && side == GreenhouseConfigSide.CLIENT) {
-            GreenhouseConfigTest.LOG.info("Client Config Values...");
-            GreenhouseConfigTest.LOG.info(splitConfig.color().serialize());
-            GreenhouseConfigTest.LOG.info(splitConfig.clientValues().color().serialize());
+                GreenhouseConfigTest.LOG.info(testConfig.clientValues().color().serialize());
         }
     }
 

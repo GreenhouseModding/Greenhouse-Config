@@ -27,6 +27,8 @@ dependencies {
 
     modImplementation("net.fabricmc:fabric-loader:${Versions.FABRIC_LOADER}")
     modImplementation("net.fabricmc.fabric-api:fabric-api:${Versions.FABRIC_API}")
+
+    modCompileOnly("com.terraformersmc:modmenu:${Versions.MOD_MENU}")
     modLocalRuntime("com.terraformersmc:modmenu:${Versions.MOD_MENU}")
 }
 

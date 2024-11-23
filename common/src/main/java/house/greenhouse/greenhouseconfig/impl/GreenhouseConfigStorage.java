@@ -30,13 +30,14 @@ public class GreenhouseConfigStorage {
 
     private static final Map<GreenhouseConfigHolder<?>, Object> SERVER_CONFIGS = new HashMap<>();
     private static final Map<GreenhouseConfigHolder<?>, Object> CLIENT_CONFIGS = new HashMap<>();
+    private static final Map<GreenhouseConfigHolder<?>, Object> UNSYNCED_CLIENT_CONFIGS = new HashMap<>();
 
-    public static <C, T> T getConfig(GreenhouseConfigHolderImpl<C, T> holder) {
+    public static <C, T> T getConfig(GreenhouseConfigHolderImpl<C, T> holder, boolean unsynced) {
         boolean isServer = GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER;
-        if (isServer && !SERVER_CONFIGS.containsKey(holder) || !isServer && !CLIENT_CONFIGS.containsKey(holder)) {
-            throw new UnsupportedOperationException("Could not find config '" + holder.getConfigName() + "'.");
+        if (isServer && !SERVER_CONFIGS.containsKey(holder) || !isServer && (unsynced ? !UNSYNCED_CLIENT_CONFIGS.containsKey(holder) : !CLIENT_CONFIGS.containsKey(holder))) {
+            throw new NullPointerException("Could not find config '" + holder.getConfigName() + "'.");
         }
-        return isServer ? (T) SERVER_CONFIGS.get(holder) : (T) CLIENT_CONFIGS.get(holder);
+        return isServer ? (T) SERVER_CONFIGS.get(holder) : unsynced ? (T) UNSYNCED_CLIENT_CONFIGS.get(holder) : (T) CLIENT_CONFIGS.get(holder);
     }
 
     public static Set<GreenhouseConfigHolder<?>> getConfigs() {
@@ -82,8 +83,11 @@ public class GreenhouseConfigStorage {
             }
             if (GreenhouseConfig.getPlatform().getSide() == GreenhouseConfigSide.DEDICATED_SERVER)
                 SERVER_CONFIGS.put(holder, value.getPartialOrThrow().getFirst());
-            else
-                CLIENT_CONFIGS.put(holder, value.getPartialOrThrow().getFirst());
+            else {
+                T config = value.getPartialOrThrow().getFirst();
+                CLIENT_CONFIGS.put(holder, config);
+                UNSYNCED_CLIENT_CONFIGS.put(holder, config);
+            }
             return value.getPartialOrThrow().getFirst();
         } catch (Exception ex) {
             onError.accept(ex.toString());
@@ -102,7 +106,10 @@ public class GreenhouseConfigStorage {
     public static void generateClientConfigs() {
         for (GreenhouseConfigHolder<?> config : GreenhouseConfigHolderRegistry.CLIENT_CONFIG_HOLDERS.values()) {
             var holder = GreenhouseConfigHolderImpl.cast(config);
-            loadConfig(holder, CLIENT_CONFIGS::put);
+            loadConfig(holder, (confHolder, conf) -> {
+                CLIENT_CONFIGS.put(confHolder, conf);
+                UNSYNCED_CLIENT_CONFIGS.put(confHolder, conf);
+            });
             GreenhouseConfig.getPlatform().postLoadEvent(holder, holder.get(), GreenhouseConfigSide.CLIENT);
         }
     }
@@ -206,7 +213,7 @@ public class GreenhouseConfigStorage {
         writer.close();
         writeSchemaVersion(file, holder);
 
-        return config;
+        return holder.decode(element).getOrThrow().getFirst();
     }
 
     private static void writeSchemaVersion(File file, GreenhouseConfigHolder<?> holder) throws IOException {

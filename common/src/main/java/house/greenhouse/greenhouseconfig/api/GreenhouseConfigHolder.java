@@ -55,10 +55,19 @@ public interface GreenhouseConfigHolder<T> {
 
     /**
      * Gets the config of this holder.
-     * @return  Returns the config.
+     * @return The config.
      */
     default T get() {
-        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<?, T>) this);
+        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<?, T>) this, false);
+    }
+
+    /**
+     * Gets the config of this holder without any server-sided changes.
+     * Useful for config screens that should obtain the client-sided value.
+     * @return The config.
+     */
+    default T getUnsynced() {
+        return GreenhouseConfigStorage.getConfig((GreenhouseConfigHolderImpl<?, T>) this, true);
     }
 
     /**
@@ -231,7 +240,7 @@ public interface GreenhouseConfigHolder<T> {
          * @param version   The version to convert from.
          * @param codec     The codec used to convert from the old version to the current version.
          */
-        public Builder<T> backwardsCompatCommon(int version, Codec<T> codec) {
+        public Builder<T> backwardsCompat(int version, Codec<T> codec) {
             backwardsCompatServer(version, codec);
             backwardsCompatClient(version, codec);
             return this;

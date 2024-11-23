@@ -15,37 +15,13 @@ public class GreenhouseConfigTestClient {
 
         LiteralCommandNode<Object> reloadNode = LiteralArgumentBuilder
                 .literal("reload")
-                .build();
-
-        LiteralCommandNode<Object> reloadSplitClientNode = LiteralArgumentBuilder
-                .literal("split")
-                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfigClient(context, GreenhouseConfigTest.SPLIT))
-                .build();
-
-        LiteralCommandNode<Object> reloadClientNode = LiteralArgumentBuilder
-                .literal("client")
-                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfigClient(context, GreenhouseConfigTest.CLIENT))
+                .executes(context -> GreenhouseConfigReloadCommandMethods.reloadGreenhouseConfigClient(context, GreenhouseConfigTest.CONFIG))
                 .build();
 
         LiteralCommandNode<Object> colorNode = LiteralArgumentBuilder
                 .literal("color")
+                .executes(context -> TestCommand.printClientText(context, GreenhouseConfigTest.CONFIG))
                 .build();
-
-        LiteralCommandNode<Object> colorSplitClientNode = LiteralArgumentBuilder
-                .literal("split")
-                .executes(context -> TestCommand.printClientText(context, GreenhouseConfigTest.SPLIT))
-                .build();
-
-        LiteralCommandNode<Object> colorClientNode = LiteralArgumentBuilder
-                .literal("client")
-                .executes(context -> TestCommand.printClientText(context, GreenhouseConfigTest.CLIENT))
-                .build();
-
-        reloadNode.addChild(reloadSplitClientNode);
-        reloadNode.addChild(reloadClientNode);
-
-        colorNode.addChild(colorSplitClientNode);
-        colorNode.addChild(colorClientNode);
 
         ghTestNode.addChild(reloadNode);
         ghTestNode.addChild(colorNode);
