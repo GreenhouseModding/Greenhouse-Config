@@ -113,12 +113,17 @@ public class ColorWidget extends AbstractColorWidget {
     @Override
     public boolean mouseClicked(double mouseX, double mouseY, int button) {
         if (textBox.mouseClicked(mouseX, mouseY, button)) {
+            currentlyActive = null;
+            currentSlider = 0.0F;
             textBox.setFocused(true);
             return true;
         }
         textBox.setFocused(false);
-        if (defaultButton.mouseClicked(mouseX, mouseY, button))
+        if (defaultButton.mouseClicked(mouseX, mouseY, button)) {
+            currentlyActive = null;
+            currentSlider = 0.0F;
             return true;
+        }
         return super.mouseClicked(mouseX, mouseY, button);
     }
 
