@@ -26,6 +26,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * A holder for configs which has a bunch of helpers methods for accessing and operating on your config.
+ * @param <T>   The config class.
+ */
 public interface GreenhouseConfigHolder<T> {
 
     /**

@@ -26,7 +26,7 @@ import java.util.function.Consumer;
 import java.util.function.UnaryOperator;
 import java.util.stream.Stream;
 
-public class JsonCOps implements DynamicOps<CommentedJson> {
+public class JsonCOps implements DynamicOps<JsonCElement> {
     public static final JsonCOps INSTANCE = new JsonCOps();
 
     @Override
@@ -35,20 +35,20 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
     }
 
     @Override
-    public CommentedJson empty() {
-        return CommentedJson.EMPTY;
+    public JsonCElement empty() {
+        return JsonCElement.EMPTY;
     }
 
     @Override
-    public CommentedJson.Object emptyMap() {
-        return CommentedJson.Object.EMPTY;
+    public JsonCObject emptyMap() {
+        return JsonCObject.EMPTY;
     }
 
     @Override
-    public <U> U convertTo(DynamicOps<U> outOps, CommentedJson input) {
+    public <U> U convertTo(DynamicOps<U> outOps, JsonCElement input) {
         Map<U, U> map = new HashMap<>();
-        if (input instanceof CommentedJson.Object object) {
-            for (Map.Entry<String, CommentedJson> entry : object.getMap().entrySet())
+        if (input instanceof JsonCObject object) {
+            for (Map.Entry<String, JsonCElement> entry : object.members().entrySet())
                 map.put(outOps.createString(entry.getKey()), JsonOps.INSTANCE.convertTo(outOps, input.json()));
             return outOps.createMap(map);
         }
@@ -56,43 +56,43 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
     }
 
     @Override
-    public DataResult<Number> getNumberValue(CommentedJson input) {
-        if (input instanceof CommentedJson.Object)
+    public DataResult<Number> getNumberValue(JsonCElement input) {
+        if (input instanceof JsonCObject)
             return DataResult.error(() -> "Cannot explicitly get number value from commented json object.");
         return JsonOps.INSTANCE.getNumberValue(input.json());
     }
 
     @Override
-    public CommentedJson createNumeric(Number i) {
-        return new CommentedJson(new JsonPrimitive(i));
+    public JsonCElement createNumeric(Number i) {
+        return new JsonCElement(new JsonPrimitive(i));
     }
 
     @Override
-    public DataResult<String> getStringValue(CommentedJson input) {
-        if (input instanceof CommentedJson.Object)
+    public DataResult<String> getStringValue(JsonCElement input) {
+        if (input instanceof JsonCObject)
             return DataResult.error(() -> "Cannot explicitly get number value from commented json object.");
         return JsonOps.INSTANCE.getStringValue(input.json());
     }
 
     @Override
-    public CommentedJson createString(String value) {
-        return new CommentedJson(new JsonPrimitive(value));
+    public JsonCElement createString(String value) {
+        return new JsonCElement(new JsonPrimitive(value));
     }
 
     @Override
-    public DataResult<Boolean> getBooleanValue(CommentedJson input) {
-        if (input instanceof CommentedJson.Object)
+    public DataResult<Boolean> getBooleanValue(JsonCElement input) {
+        if (input instanceof JsonCObject)
             return DataResult.error(() -> "Cannot explicitly get number value from commented json object.");
         return JsonOps.INSTANCE.getBooleanValue(input.json());
     }
 
     @Override
-    public CommentedJson createBoolean(final boolean value) {
-        return new CommentedJson(new JsonPrimitive(value));
+    public JsonCElement createBoolean(final boolean value) {
+        return new JsonCElement(new JsonPrimitive(value));
     }
 
     @Override
-    public DataResult<CommentedJson> mergeToList(final CommentedJson list, final CommentedJson value) {
+    public DataResult<JsonCElement> mergeToList(final JsonCElement list, final JsonCElement value) {
         if (list == empty())
             return DataResult.success(empty());
 
@@ -104,15 +104,15 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
             result.addAll((JsonArray)list.json());
 
         result.add(value.json());
-        return DataResult.success(new CommentedJson(result, list.comments()));
+        return DataResult.success(new JsonCElement(result, list.comments()));
     }
 
     @Override
-    public DataResult<CommentedJson> mergeToList(final CommentedJson list, final List<CommentedJson> values) {
+    public DataResult<JsonCElement> mergeToList(final JsonCElement list, final List<JsonCElement> values) {
         if (list == null)
             return DataResult.error(() -> "mergeToList called with null.");
 
-        if (!(list instanceof CommentedJson) && list != empty())
+        if (!(list instanceof JsonCElement) && list != empty())
             return DataResult.error(() -> "mergeToList called with not a list: " + list, list);
 
         final JsonArray result = new JsonArray();
@@ -120,34 +120,34 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
             result.addAll((JsonArray)list.json());
 
         values.forEach(commented -> result.add(commented.json()));
-        return DataResult.success(new CommentedJson(result, list.comments()));
+        return DataResult.success(new JsonCElement(result, list.comments()));
     }
 
     @Override
-    public DataResult<CommentedJson> mergeToMap(CommentedJson map, CommentedJson key, CommentedJson value) {
-        if (!(map instanceof CommentedJson.Object) && map != empty())
+    public DataResult<JsonCElement> mergeToMap(JsonCElement map, JsonCElement key, JsonCElement value) {
+        if (!(map instanceof JsonCObject) && map != empty())
             return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
 
         if (!(key.json() instanceof JsonPrimitive || !key.json().getAsJsonPrimitive().isString()))
             return DataResult.error(() -> "key is not a string: " + key, map);
 
-        final Map<String, CommentedJson> output = new HashMap<>();
+        final Map<String, JsonCElement> output = new HashMap<>();
         if (map != null && map != empty())
-            output.putAll(((CommentedJson.Object) map).getMap());
+            output.putAll(((JsonCObject) map).members());
         output.put(key.json().getAsString(), value);
 
-        return DataResult.success(new CommentedJson.Object(output, map != null ? map.comments() : new String[]{}));
+        return DataResult.success(new JsonCObject(output, map != null ? map.comments() : new String[]{}));
     }
 
     @Override
-    public DataResult<CommentedJson> mergeToMap(final CommentedJson map, final MapLike<CommentedJson> values) {
-        if (!(map instanceof CommentedJson.Object) && map != empty()) {
+    public DataResult<JsonCElement> mergeToMap(final JsonCElement map, final MapLike<JsonCElement> values) {
+        if (!(map instanceof JsonCObject) && map != empty()) {
             return DataResult.error(() -> "mergeToMap called with not a map: " + map, map);
         }
 
-        final CommentedJson.Object output = new CommentedJson.Object(map != null ? map.comments() : new String[]{});
+        final JsonCObject output = new JsonCObject(map != null ? map.comments() : new String[]{});
         if (map != null && map != empty())
-            output.putAll(((CommentedJson.Object) map).getMap());
+            output.putAll(((JsonCObject) map).members());
 
         final List<JsonElement> missed = Lists.newArrayList();
 
@@ -166,36 +166,36 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
         return DataResult.success(output);
     }
     @Override
-    public DataResult<Stream<Pair<CommentedJson, CommentedJson>>> getMapValues(final CommentedJson input) {
-        if (!(input instanceof CommentedJson.Object object))
+    public DataResult<Stream<Pair<JsonCElement, JsonCElement>>> getMapValues(final JsonCElement input) {
+        if (!(input instanceof JsonCObject object))
             return DataResult.error(() -> "Not a JSON object: " + input);
 
-        return DataResult.success(object.getMap().entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue())));
+        return DataResult.success(object.members().entrySet().stream().map(entry -> Pair.of(createString(entry.getKey()), entry.getValue())));
     }
 
     @Override
-    public DataResult<Consumer<BiConsumer<CommentedJson, CommentedJson>>> getMapEntries(final CommentedJson input) {
-        if (!(input instanceof CommentedJson.Object object))
+    public DataResult<Consumer<BiConsumer<JsonCElement, JsonCElement>>> getMapEntries(final JsonCElement input) {
+        if (!(input instanceof JsonCObject object))
             return DataResult.error(() -> "Not a JSON object: " + input);
 
         return DataResult.success(c -> {
-            for (final Map.Entry<String, CommentedJson> entry : object.getMap().entrySet()) {
+            for (final Map.Entry<String, JsonCElement> entry : object.members().entrySet()) {
                 c.accept(createString(entry.getKey()), entry.getValue());
             }
         });
     }
 
     @Override
-    public DataResult<MapLike<CommentedJson>> getMap(final CommentedJson input) {
-        if (!(input instanceof CommentedJson.Object object)) {
+    public DataResult<MapLike<JsonCElement>> getMap(final JsonCElement input) {
+        if (!(input instanceof JsonCObject object)) {
             return DataResult.error(() -> "Not a commented JSON object: " + input);
         }
         return DataResult.success(new MapLike<>() {
             @Nullable
             @Override
-            public CommentedJson get(final CommentedJson key) {
+            public JsonCElement get(final JsonCElement key) {
                 if (key.json() instanceof JsonPrimitive primitive && primitive.isString()) {
-                    final CommentedJson element = object.getMap().get((primitive.getAsString()));
+                    final JsonCElement element = object.members().get((primitive.getAsString()));
                     if (element.json() instanceof JsonNull)
                         return null;
                     return element;
@@ -205,8 +205,8 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
 
             @Nullable
             @Override
-            public CommentedJson get(final String key) {
-                final CommentedJson element = object.getMap().get(key);
+            public JsonCElement get(final String key) {
+                final JsonCElement element = object.members().get(key);
                 if (element.json() instanceof JsonNull) {
                     return null;
                 }
@@ -214,8 +214,8 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
             }
 
             @Override
-            public Stream<Pair<CommentedJson, CommentedJson>> entries() {
-                return object.getMap().entrySet().stream().map(e -> Pair.of(createString(e.getKey()), e.getValue()));
+            public Stream<Pair<JsonCElement, JsonCElement>> entries() {
+                return object.members().entrySet().stream().map(e -> Pair.of(createString(e.getKey()), e.getValue()));
             }
 
             @Override
@@ -226,26 +226,26 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
     }
 
     @Override
-    public CommentedJson createMap(final Stream<Pair<CommentedJson, CommentedJson>> map) {
-        final CommentedJson.Object result = new CommentedJson.Object();
+    public JsonCElement createMap(final Stream<Pair<JsonCElement, JsonCElement>> map) {
+        final JsonCObject result = new JsonCObject();
         map.forEach(p -> result.put(p.getFirst().json().getAsString(), p.getSecond()));
         return result;
     }
 
     @Override
-    public DataResult<Stream<CommentedJson>> getStream(final CommentedJson input) {
+    public DataResult<Stream<JsonCElement>> getStream(final JsonCElement input) {
         if (input.json() instanceof JsonArray array) {
-            return DataResult.success(array.asList().stream().map(e -> e instanceof JsonNull ? null : new CommentedJson(e)));
+            return DataResult.success(array.asList().stream().map(e -> e instanceof JsonNull ? null : new JsonCElement(e)));
         }
         return DataResult.error(() -> "Not a json array: " + input);
     }
 
     @Override
-    public DataResult<Consumer<Consumer<CommentedJson>>> getList(final CommentedJson input) {
+    public DataResult<Consumer<Consumer<JsonCElement>>> getList(final JsonCElement input) {
         if (input.json() instanceof JsonArray array) {
             return DataResult.success(c -> {
                 for (final JsonElement element : array.asList()) {
-                    c.accept(element instanceof JsonNull ? null : new CommentedJson(element));
+                    c.accept(element instanceof JsonNull ? null : new JsonCElement(element));
                 }
             });
         }
@@ -253,42 +253,42 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
     }
 
     @Override
-    public CommentedJson createList(final Stream<CommentedJson> input) {
+    public JsonCElement createList(final Stream<JsonCElement> input) {
         final JsonArray result = new JsonArray();
         input.forEach(commented -> result.add(commented.json()));
-        return new CommentedJson(result);
+        return new JsonCElement(result);
     }
 
     @Override
-    public CommentedJson remove(final CommentedJson input, final String key) {
+    public JsonCElement remove(final JsonCElement input, final String key) {
         if (input.json() instanceof JsonObject object) {
             final JsonObject result = new JsonObject();
             object.entrySet().stream().filter(entry -> !Objects.equals(entry.getKey(), key)).forEach(entry -> result.add(entry.getKey(), entry.getValue()));
-            return new CommentedJson(result, input.comments());
+            return new JsonCElement(result, input.comments());
         }
         return input;
     }
 
     @Override
-    public ListBuilder<CommentedJson> listBuilder() {
+    public ListBuilder<JsonCElement> listBuilder() {
         return new ArrayBuilder();
     }
 
     @Override
-    public RecordBuilder<CommentedJson> mapBuilder() {
+    public RecordBuilder<JsonCElement> mapBuilder() {
         return new JsonCRecordBuilder();
     }
 
-    private static final class ArrayBuilder implements ListBuilder<CommentedJson> {
-        private DataResult<CommentedJson> builder = DataResult.success(new CommentedJson(new JsonArray()), Lifecycle.stable());
+    private static final class ArrayBuilder implements ListBuilder<JsonCElement> {
+        private DataResult<JsonCElement> builder = DataResult.success(new JsonCElement(new JsonArray()), Lifecycle.stable());
 
         @Override
-        public DynamicOps<CommentedJson> ops() {
+        public DynamicOps<JsonCElement> ops() {
             return INSTANCE;
         }
 
         @Override
-        public ListBuilder<CommentedJson> add(final CommentedJson value) {
+        public ListBuilder<JsonCElement> add(final JsonCElement value) {
             builder = builder.map(b -> {
                 ((JsonArray)b.json()).add(value.json());
                 return b;
@@ -297,7 +297,7 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
         }
 
         @Override
-        public ListBuilder<CommentedJson> add(final DataResult<CommentedJson> value) {
+        public ListBuilder<JsonCElement> add(final DataResult<JsonCElement> value) {
             if (value.isError())
                 return this;
             builder = builder.apply2stable((b, element) -> {
@@ -308,20 +308,20 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
         }
 
         @Override
-        public ListBuilder<CommentedJson> withErrorsFrom(final DataResult<?> result) {
+        public ListBuilder<JsonCElement> withErrorsFrom(final DataResult<?> result) {
             builder = builder.flatMap(r -> result.map(v -> r));
             return this;
         }
 
         @Override
-        public ListBuilder<CommentedJson> mapError(final UnaryOperator<String> onError) {
+        public ListBuilder<JsonCElement> mapError(final UnaryOperator<String> onError) {
             builder = builder.mapError(onError);
             return this;
         }
 
         @Override
-        public DataResult<CommentedJson> build(final CommentedJson prefix) {
-            final DataResult<CommentedJson> result = builder.flatMap(b -> {
+        public DataResult<JsonCElement> build(final JsonCElement prefix) {
+            final DataResult<JsonCElement> result = builder.flatMap(b -> {
                 if (prefix == ops().empty()) {
                     return DataResult.success(b, Lifecycle.stable());
                 }
@@ -333,7 +333,7 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
                 final JsonArray array = new JsonArray();
                 array.addAll((JsonArray) prefix.json());
                 array.addAll((JsonArray) b.json());
-                return DataResult.success(new CommentedJson(array), Lifecycle.stable());
+                return DataResult.success(new JsonCElement(array), Lifecycle.stable());
             });
 
             builder = result;
@@ -341,34 +341,34 @@ public class JsonCOps implements DynamicOps<CommentedJson> {
         }
     }
 
-    private class JsonCRecordBuilder extends RecordBuilder.AbstractStringBuilder<CommentedJson, CommentedJson.Object> {
+    private class JsonCRecordBuilder extends RecordBuilder.AbstractStringBuilder<JsonCElement, JsonCObject> {
         protected JsonCRecordBuilder() {
             super(JsonCOps.this);
         }
 
         @Override
-        protected CommentedJson.Object initBuilder() {
-            return new CommentedJson.Object();
+        protected JsonCObject initBuilder() {
+            return new JsonCObject();
         }
 
 
         @Override
-        protected CommentedJson.Object append(String key, CommentedJson value, CommentedJson.Object builder) {
+        protected JsonCObject append(String key, JsonCElement value, JsonCObject builder) {
             builder.put(key, value);
             return builder;
         }
 
         @Override
-        protected DataResult<CommentedJson> build(final CommentedJson.Object builder, final CommentedJson prefix) {
+        protected DataResult<JsonCElement> build(final JsonCObject builder, final JsonCElement prefix) {
             if (prefix == null || prefix == ops().empty()) {
                 return DataResult.success(builder);
             }
-            if (prefix instanceof CommentedJson.Object object) {
-                final CommentedJson.Object result = new CommentedJson.Object();
-                for (final Map.Entry<String, CommentedJson> entry : object.getMap().entrySet()) {
+            if (prefix instanceof JsonCObject object) {
+                final JsonCObject result = new JsonCObject();
+                for (final Map.Entry<String, JsonCElement> entry : object.members().entrySet()) {
                     result.put(entry.getKey(), entry.getValue());
                 }
-                for (final Map.Entry<String, CommentedJson> entry : builder.getMap().entrySet()) {
+                for (final Map.Entry<String, JsonCElement> entry : builder.members().entrySet()) {
                     result.put(entry.getKey(), entry.getValue());
                 }
                 return DataResult.success(result);

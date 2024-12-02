@@ -11,14 +11,14 @@ import house.greenhouse.greenhouseconfig.api.lang.ConfigLang;
 
 import com.mojang.serialization.DynamicOps;
 
-public final class JsonCLang implements ConfigLang<CommentedJson> {
+public final class JsonCLang implements ConfigLang<JsonCElement> {
     public static final JsonCLang INSTANCE = new JsonCLang();
 
     private JsonCLang() {
     }
 
     @Override
-    public DynamicOps<CommentedJson> getOps() {
+    public DynamicOps<JsonCElement> getOps() {
         return JsonCOps.INSTANCE;
     }
 
@@ -28,19 +28,19 @@ public final class JsonCLang implements ConfigLang<CommentedJson> {
     }
 
     @Override
-    public void write(Writer writer, CommentedJson configObj) throws IOException {
+    public void write(Writer writer, JsonCElement configObj) throws IOException {
         JsonCWriter jsonCWriter = new JsonCWriter(writer);
-        jsonCWriter.writeJson(configObj);
+        jsonCWriter.write(configObj);
         jsonCWriter.flush();
     }
 
     @Override
-    public CommentedJson read(Reader reader) throws IOException {
+    public JsonCElement read(Reader reader) throws IOException {
         JsonElement json = JsonParser.parseReader(reader);
         if (json.isJsonObject()) {
-            return new CommentedJson.Object(json.getAsJsonObject());
+            return new JsonCObject(json.getAsJsonObject());
         } else {
-            return new CommentedJson(json);
+            return new JsonCElement(json);
         }
     }
 }
