@@ -43,7 +43,7 @@ public class ColorWidget extends AbstractColorWidget {
             @Override
             public void onPress() {
                 setColor(defaultColor);
-                textBox.setValue(color.serialize());
+                textBox.setValue(defaultColor.serialize());
                 setDirty(true);
             }
 
