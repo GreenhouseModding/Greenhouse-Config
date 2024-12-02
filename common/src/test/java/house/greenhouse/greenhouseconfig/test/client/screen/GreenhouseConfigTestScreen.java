@@ -1,5 +1,7 @@
 package house.greenhouse.greenhouseconfig.test.client.screen;
 
+import house.greenhouse.greenhouseconfig.api.util.LateHolder;
+import house.greenhouse.greenhouseconfig.api.util.LateHolderSet;
 import house.greenhouse.greenhouseconfig.test.GreenhouseConfigTest;
 import house.greenhouse.greenhouseconfig.test.client.screen.widget.ColorWidget;
 import house.greenhouse.greenhouseconfig.test.config.TestConfig;
@@ -12,8 +14,6 @@ import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.client.gui.layouts.HeaderAndFooterLayout;
 import net.minecraft.client.gui.layouts.LinearLayout;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.network.chat.CommonComponents;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextColor;
@@ -154,9 +154,9 @@ public class GreenhouseConfigTestScreen extends Screen {
      */
     public static class TestConfigBuilder {
         protected int silly;
-        protected Holder<Enchantment> favoriteEnchantment;
-        protected HolderSet<Block> redBlocks;
-        protected HolderSet<Biome> greenBiomes;
+        protected LateHolder<Enchantment> favoriteEnchantment;
+        protected LateHolderSet<Block> redBlocks;
+        protected LateHolderSet<Biome> greenBiomes;
         protected TextColor color;
         protected TextColor clientColor;
 
@@ -174,7 +174,7 @@ public class GreenhouseConfigTestScreen extends Screen {
             return this;
         }
 
-        public TestConfigBuilder favoriteEnchantment(Holder<Enchantment> enchantment) {
+        public TestConfigBuilder favoriteEnchantment(LateHolder<Enchantment> enchantment) {
             this.favoriteEnchantment = enchantment;
             return this;
         }

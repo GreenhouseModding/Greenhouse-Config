@@ -1,17 +1,15 @@
 package house.greenhouse.greenhouseconfig.test.config;
 
-import com.google.common.collect.ImmutableList;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import house.greenhouse.greenhouseconfig.api.codec.GreenhouseConfigStreamCodecs;
 import house.greenhouse.greenhouseconfig.api.util.Late;
 import house.greenhouse.greenhouseconfig.api.util.LateHolder;
+import house.greenhouse.greenhouseconfig.api.util.LateHolderSet;
 import house.greenhouse.greenhouseconfig.impl.util.LateHolderSetImpl;
 import house.greenhouse.greenhouseconfig.api.codec.GreenhouseConfigCodecs;
 import house.greenhouse.greenhouseconfig.test.GreenhouseConfigTest;
-import net.minecraft.core.Holder;
-import net.minecraft.core.HolderSet;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.TextColor;
@@ -29,9 +27,9 @@ import net.minecraft.world.level.block.Block;
 import java.util.List;
 
 public record TestConfig(int silly,
-                         Holder<Enchantment> favoriteEnchantment,
-                         HolderSet<Block> redBlocks,
-                         HolderSet<Biome> greenBiomes,
+                         LateHolder<Enchantment> favoriteEnchantment,
+                         LateHolderSet<Block> redBlocks,
+                         LateHolderSet<Biome> greenBiomes,
                          TextColor color,
                          ClientConfigValues clientValues) {
     public static final TagKey<Biome> GREENS = TagKey.create(Registries.BIOME, GreenhouseConfigTest.asResource("greens"));
@@ -63,17 +61,7 @@ public record TestConfig(int silly,
     }
 
     public List<? extends Late> getLateValues() {
-        ImmutableList.Builder<Late> builder = ImmutableList.builder();
-        builder.add(cast(favoriteEnchantment));
-        builder.add(cast(redBlocks));
-        builder.add(cast(greenBiomes));
-        return builder.build();
-    }
-
-    private Late cast(Object obj) {
-        if (!(obj instanceof Late))
-            throw new RuntimeException("The specified object is not late.");
-        return (Late)obj;
+        return List.of(favoriteEnchantment, redBlocks, greenBiomes);
     }
 
     public record ClientConfigValues(TextColor color) {

@@ -2,6 +2,7 @@ package house.greenhouse.greenhouseconfig.api.codec;
 
 import com.mojang.datafixers.util.Either;
 import house.greenhouse.greenhouseconfig.api.util.LateHolder;
+import house.greenhouse.greenhouseconfig.api.util.LateHolderSet;
 import house.greenhouse.greenhouseconfig.impl.util.LateHolderImpl;
 import house.greenhouse.greenhouseconfig.impl.util.LateHolderSetImpl;
 import io.netty.buffer.ByteBuf;
@@ -19,8 +20,8 @@ import java.util.List;
 import java.util.Optional;
 
 public class GreenhouseConfigStreamCodecs {
-    public static <T> StreamCodec<ByteBuf, Holder<T>> lateHolderStreamCodec(final ResourceKey<Registry<T>> registry) {
-        return new StreamCodec<>() {
+    public static <T> StreamCodec<ByteBuf, LateHolder<T>> lateHolderStreamCodec(final ResourceKey<Registry<T>> registry) {
+        StreamCodec<ByteBuf, Holder<T>> holder = new StreamCodec<>() {
             private final StreamCodec<ByteBuf, ResourceKey<T>> holderCodec = ResourceKey.streamCodec(registry);
 
             public Holder<T> decode(ByteBuf buf) {
@@ -35,10 +36,11 @@ public class GreenhouseConfigStreamCodecs {
                     holderCodec.encode(buf, lateHolder.key());
             }
         };
+        return holder.map(holders -> (LateHolder<T>) holders, holders -> holders);
     }
 
-    public static <T> StreamCodec<ByteBuf, HolderSet<T>> lateHolderSetStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
-        return new StreamCodec<>() {
+    public static <T> StreamCodec<ByteBuf, LateHolderSet<T>> lateHolderSetStreamCodec(final ResourceKey<? extends Registry<T>> registryKey) {
+        StreamCodec<ByteBuf, HolderSet<T>> holder = new StreamCodec<>() {
             private final StreamCodec<ByteBuf, ResourceKey<T>> holderCodec = ResourceKey.streamCodec(registryKey);
 
             public HolderSet<T> decode(ByteBuf buf) {
@@ -89,5 +91,6 @@ public class GreenhouseConfigStreamCodecs {
 
             }
         };
+        return holder.map(holders -> (LateHolderSet<T>) holders, holders -> holders);
     }
 }

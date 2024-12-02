@@ -17,7 +17,7 @@ public class GreenhouseConfigTest {
     public static final String MOD_ID = "greenhouseconfig_test";
     public static final Logger LOG = LoggerFactory.getLogger("Greenhouse Config Test");
 
-    public static final GreenhouseConfigHolder<TestConfig> CONFIG = new GreenhouseConfigHolder.Builder<TestConfig>(MOD_ID)
+    public static final GreenhouseConfigHolder<TestConfig> CONFIG = GreenhouseConfigHolder.<TestConfig>builder(MOD_ID)
             .schemaVersion(3)
             .server(TestConfig.CODEC, TestConfig.DEFAULT)
             .client(TestConfig.CODEC, TestConfig.DEFAULT)
@@ -27,8 +27,7 @@ public class GreenhouseConfigTest {
             .backwardsCompat(2, TestConfig.CompatCodecs.V2)
             .buildAndRegister();
 
-    public static void init() {
-    }
+    public static void init() {}
 
     public static void registerServerCommands(CommandDispatcher<CommandSourceStack> dispatcher) {
         LiteralCommandNode<CommandSourceStack> ghTestNode = Commands

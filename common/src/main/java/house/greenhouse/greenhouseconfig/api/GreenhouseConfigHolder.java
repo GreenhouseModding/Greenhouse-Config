@@ -33,6 +33,16 @@ import java.util.function.Function;
 public interface GreenhouseConfigHolder<T> {
 
     /**
+     * Constructs a {@link GreenhouseConfigHolder.Builder} with the specified config name.
+     * Configs will be inside the config folder as 'config_name'.'file_extension'
+     *
+     * @param configName The name to create a config under.
+     */
+    static <T> Builder<T> builder(String configName) {
+        return new Builder<>(configName);
+    }
+
+    /**
      * Gets the schema version for this config.
      * @return The schema version.
      */
@@ -131,17 +141,13 @@ public interface GreenhouseConfigHolder<T> {
         private BiConsumer<HolderLookup.Provider, T> postRegistryPopulationCallback;
         private Consumer<T> lateDepopulationCallback;
         private Consumer<T> postRegistryDepopulationCallback;
+
+        // TODO: Don't do codecs at home and use DFU instead.
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsServer = ImmutableMap.builder();
         private final Set<Integer> backwardsCompatClientVersions = new HashSet<>();
         private final ImmutableMap.Builder<Integer, Codec<T>> backwardsCompatCodecsClient = ImmutableMap.builder();
 
-        /**
-         * Constructs a {@link GreenhouseConfigHolder.Builder} with the specified config name.
-         * Configs will be inside the config folder as 'config_name'.jsonc
-         *
-         * @param configName The name to create a config for.
-         */
-        public Builder(String configName) {
+        protected Builder(String configName) {
             this.configName = configName;
         }
 

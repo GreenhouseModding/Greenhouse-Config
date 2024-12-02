@@ -34,7 +34,6 @@ public class LateHolderSetCodec<E> extends HolderSetCodec<E> {
                     entries.add(ResourceKey.create(registryKey, ResourceLocation.parse(string)));
             });
         } else if (ops.getStringValue(value).isSuccess()) {
-            var str = ops.getStringValue(value).getOrThrow();
             String string = ops.getStringValue(value).getOrThrow();
             if (string.startsWith("#"))
                 tags.add(TagKey.create(registryKey, ResourceLocation.parse(string.substring(1))));

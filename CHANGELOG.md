@@ -1,1 +1,2 @@
 - Added `getUnsynced` method, for getting the client config values without any server interference.
+- Simplified JsonC writing.
